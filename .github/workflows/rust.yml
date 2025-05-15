@@ -40,16 +40,21 @@ jobs:
         cargo doc --no-deps --document-private-items
         cargo test --doc
 
+    - name: Install cargo-udeps
+      run: |
+        cargo install cargo-udeps --locked
+        echo "$(dirname $(which cargo-udeps))" >> $GITHUB_PATH
+
     - name: Check for unused dependencies
-      uses: actions-rs/cargo@v1
-      with:
-        command: udeps
-        args: --all-targets --all-features
+      run: cargo udeps --all-targets --all-features
+
+    - name: Install cargo-audit
+      run: |
+        cargo install cargo-audit --features=fix --locked
+        echo "$(dirname $(which cargo-audit))" >> $GITHUB_PATH
 
     - name: Check for security vulnerabilities
-      uses: actions-rs/audit-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+      run: cargo audit --deny warnings
 
     - name: Check for outdated dependencies
       run: cargo outdated -R
