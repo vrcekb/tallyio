@@ -1,0 +1,1 @@
+//! Varno shranjevanje

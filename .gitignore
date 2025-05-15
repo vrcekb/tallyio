@@ -36,3 +36,96 @@ release/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Debug files
+*.ilk
+*.dll
+*.so
+*.dylib
+*.lib
+*.exp
+
+# Environment files
+*.env.*
+!.env.example
+
+# Build output
+**/*.rlib
+
+# Coverage files
+/coverage.info
+/llvm-cov-target/
+
+# Local history for Visual Studio Code
+.history/
+
+# Local Netlify folder
+.netlify
+
+# Local cargo cache
+.cargo/registry/
+.cargo/git/
+
+# Local rustup toolchains
+# (since we use rustup to manage toolchains)
+# Uncomment if you don't want to track toolchain overrides
+# of your repositories
+# rust-toolchain
+# rust-toolchain.toml
+
+# Local cargo config
+.cargo-*
+!.cargo/config.toml
+
+# Local settings for RustRover IDE
+*.iml
+
+# Local settings for VS Code
+.settings/
+
+# Local configuration for cargo-make
+Makefile.toml
+
+# Local configuration for Just
+justfile
+
+# Local development certificates
+*.pem
+*.crt
+*.key
+
+# Local development database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Local development logs
+*.log
+
+# Local development ports file
+*.port
+
+# Local development pid file
+*.pid
+
+# Local development lock file
+*.lock
+
+# Local development temporary files
+*.tmp
+*.temp
+
+# Local development cache
+.cache/
+
+# Local development artifacts
+artifacts/
+
+# Local development coverage
+lcov.info
+*.gcno
+*.gcda
+
+# Local development profiling data
+*.profdata
+*.profraw

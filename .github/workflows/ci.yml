@@ -1,0 +1,208 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+  RUST_BACKTRACE: 1
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  check:
+    name: Check
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+        components: rustfmt, clippy
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+    
+    - name: Check code formatting
+      run: cargo fmt --all -- --check
+    
+    - name: Run Clippy
+      run: |
+        cargo clippy --all-targets --all-features -- -D warnings
+        cargo clippy --all-targets --all-features -- -D clippy::pedantic
+        cargo clippy --all-targets --all-features -- -D clippy::nursery
+    
+    - name: Check for unused dependencies
+      run: |
+        rustup toolchain install nightly --component rust-src
+        cargo +nightly install cargo-udeps --locked
+        cargo +nightly udeps --all-targets --all-features
+    
+    - name: Check for security vulnerabilities
+      uses: actions-rs/audit-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Check for outdated dependencies
+      run: |
+        cargo install cargo-outdated
+        cargo outdated -R
+    
+  test:
+    name: Test Suite
+    needs: check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        rust: [stable, 1.70.0]
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: x86_64-apple-darwin
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: ${{ matrix.rust }}
+        target: ${{ matrix.target }}
+        override: true
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-${{ matrix.rust }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.rust }}-${{ matrix.target }}-
+    
+    - name: Run tests
+      run: cargo test --all --no-fail-fast -- --nocapture
+    
+    - name: Generate test coverage (Linux only)
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      id: coverage
+      run: |
+        # Namestimo potrebna orodja
+        echo "Installing tools..."
+        curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
+        wget -O - -q https://raw.githubusercontent.com/mozilla/grcov/master/grcov.ps1 > grcov.ps1
+        cargo install cargo-tarpaulin
+        
+        # Generiramo podatke o pokritosti v HTML obliki za lokalno uporabo
+        echo "Generating coverage report..."
+        cargo tarpaulin --out Html --output-dir target/coverage
+        echo "Local coverage report available at: file://$(pwd)/target/coverage/tarpaulin-report.html"
+        
+        # Generiramo tudi XML za morebitno pošiljanje na Codecov
+        echo "Generating Codecov report..."
+        cargo tarpaulin --out Xml --output-dir target/coverage
+        ./grcov target/coverage/cobertura.xml -s . -t cobertura --branch --ignore-not-existing -o target/coverage/coverage.xml
+    
+    - name: Upload to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      uses: codecov/codecov-action@v3
+      with:
+        file: target/coverage/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true
+
+  doc:
+    name: Documentation
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+        components: rust-docs
+    
+    - name: Generate documentation
+      run: |
+        cargo doc --no-deps --document-private-items
+        echo "Documentation generated in target/doc"
+    
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: target/doc
+        branch: gh-pages
+        clean: true
+        clean-exclude: |
+          **/*.lock
+          **/Cargo.toml
+          **/Cargo.lock
+
+  release:
+    name: Create Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [check, test, doc]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    
+    - name: Build release
+      run: |
+        cargo build --release
+        cargo test --release
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./target/release/tallyio
+        asset_name: tallyio-${{ github.ref }}.tar.gz
+        asset_content_type: application/gzip

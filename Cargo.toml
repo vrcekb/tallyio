@@ -1,30 +1,19 @@
-[package]
-name = "tallyio"
-version = "0.1.0"
-edition = "2021"
-description = "A Rust library for handling calculations with proper error handling"
-authors = ["vrcekb"]
-license = "MIT"
-repository = "https://github.com/vrcekb/tallyio"
-documentation = "https://docs.rs/tallyio"
-readme = "README.md"
-keywords = ["calculator", "error-handling", "utilities"]
-categories = ["algorithms", "api-bindings"]
-
-[package.metadata.docs.rs]
-# Document all features
-all-features = true
-# Use the same dependencies as the default target
-default-target = "x86_64-unknown-linux-gnu"
-
-[dependencies]
-thiserror = "1.0"
-anyhow = "1.0"
-
-[dev-dependencies]
-proptest = "1.0"
-tempfile = "3.10"
-anyhow = "1.0"  # For test utilities
-
 [workspace]
+members = [
+    "crates/core",
+    "crates/blockchain",
+    "crates/strategies",
+    "crates/risk",
+    "crates/simulator",
+    "crates/wallet",
+    "crates/network",
+    "crates/metrics",
+    "crates/data",
+    "crates/ml",
+    "crates/secure_storage",
+    "crates/data_storage",
+    "crates/cross_chain",
+    "crates/api",
+    "crates/cli"
+]
 resolver = "2"

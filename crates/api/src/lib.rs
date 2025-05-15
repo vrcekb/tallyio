@@ -1,0 +1,1 @@
+//! REST in WebSocket API

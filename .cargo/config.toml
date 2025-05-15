@@ -1,0 +1,115 @@
+# Konfiguracija za Cargo
+
+[build]
+# Vedno uporabi več niti za izgradnjo
+# jobs = 0  # odstranjeno, ker ni dovoljeno
+
+
+# Vedno preveri varnostne ranljivosti
+[audit]
+# Prepreči izvajanje, če so prisotne ranljivosti
+deny = ["unmaintained"]
+# Preveri tudi posredne odvisnosti
+vulnerability = "deny"
+
+# Nastavitve za registre
+[registries.crates-io]
+protocol = "sparse"
+
+# Nastavitve za dokumentacijo
+[doc]
+# Vključi zasebne elemente v dokumentacijo
+document-private-items = true
+# Omogoči JavaScript v dokumentaciji
+javascript = true
+# Omogoči iskanje v dokumentaciji
+search = true
+
+# Nastavitve za Clippy
+[clippy]
+# Omogoči vse Clippy opozorila
+all-targets = true
+all-features = true
+warnings = [
+    "clippy::all",
+    "clippy::pedantic",
+    "clippy::nursery",
+    "clippy::cargo",
+]
+
+# Ignoriraj določena opozorila
+allow = [
+    "clippy::module_name_repetitions",
+    "clippy::multiple_crate_versions",
+    "clippy::missing_errors_doc",
+    "clippy::missing_panics_doc",
+]
+
+# Nastavitve za Rustfmt
+[rustfmt]
+# Največja širina vrstice
+max_width = 100
+# Uporabi hevristiko za manjše datoteke
+use_small_heuristics = "Max"
+# Omogoči nestabilne funkcije
+unstable_features = true
+
+# Nastavitve za LLVM
+[llvm]
+# Omogoči vzporedno izvajanje
+parallel = true
+
+# Nastavitve za profiliranje
+[profile.dev]
+# Omogoči optimizacije za hitrejše izvajanje
+debug = 1               # vključi debug informacije
+opt-level = 1            # omogoči osnovne optimizacije
+overflow-checks = false   # hitrejša izvedba, manj natančno obveščanje o prekoračitvah
+
+[profile.release]
+# Nastavitve za končno izdajo
+opt-level = 3            # maksimalne optimizacije
+lto = "fat"               # link-time optimizacije
+codegen-units = 1        # boljše optimizacije, počasnejša izgradnja
+debug = 1                # vključi osnovne debug informacije
+panic = "abort"           # hitrejša izvedba, manjša velikost binarne datoteky
+
+[profile.bench]
+# Nastavitve za merjenje zmogljivosti
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+debug = false
+
+[profile.test]
+# Nastavitve za teste
+opt-level = 1
+debug = true
+
+[profile.dev.package."*"]
+# Posebne nastavitve za vse odvisnosti v načinu razvoja
+opt-level = 3
+
+[profile.release.package."*"]
+# Posebne nastavitve za vse odvisnosti v končni izdaji
+opt-level = 3
+
+# Nastavitve za namizje (če je potrebno)
+[term]
+# Barvni izpis
+color = 'auto'
+
+# Nastavitve za prenosi
+[net]
+# Število sočasnih prenosov
+git-fetch-with-cli = true  # uporabi git CLI namesto vgrajenega gita
+
+# Nastavitve za predpomnilnik
+[cache]
+# Lokacija predpomnilnika
+directory = "target/cargo"
+
+# Nastavitve za vzporedno izvajanje
+[future-incompat-report]
+# Generiraj poročilo o nezdružljivostih
+frequency = "always"
