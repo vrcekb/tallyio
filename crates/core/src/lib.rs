@@ -1,4 +1,4 @@
-//! Jedro sistema TallyIO
+//! Jedro sistema `TallyIO`
 
 #[cfg(test)]
 mod tests {

@@ -1,7 +1,7 @@
 //! Abstrakcije in implementacije za posamezne verige
 
 use crate::error::BlockchainError;
-use crate::types::*;
+use crate::types::{Address, Balance, Block, Transaction, TxHash};
 use async_trait::async_trait;
 
 #[async_trait]
@@ -20,7 +20,7 @@ pub struct EthereumChain;
 #[async_trait]
 impl Chain for EthereumChain {
     async fn current_block(&self) -> Result<Block, BlockchainError> {
-        Ok(Block { number: 123456, hash: [0u8; 32] })
+        Ok(Block { number: 123_456, hash: [0u8; 32] })
     }
     async fn send_transaction(&self, _tx: Transaction) -> Result<TxHash, BlockchainError> {
         Ok([1u8; 32])

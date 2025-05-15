@@ -17,7 +17,7 @@ fn test_ethereumchain_current_block_latency() {
     let elapsed = start.elapsed();
     // Ultra-nizka latenca: <0.1ms
     assert!(elapsed.as_micros() < 100, "Previsoka latenca: {elapsed:?}");
-    assert_eq!(block.number, 123456);
+    assert_eq!(block.number, 123_456);
 }
 
 #[test]

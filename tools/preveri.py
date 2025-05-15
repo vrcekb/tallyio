@@ -109,17 +109,24 @@ def main():
             clippy_result.errors.append("Najdene so bile napake ali opozorila pri Clippy!")
             return False
         return True
-    if not run_check(
+    clippy_cmd = [
         "cargo clippy --all-targets --all-features -- -D warnings",
-        install_hint="rustup component add clippy",
-        success_msg="✓ Vsa Clippy preverjanja so uspela",
-        fail_msg="⚠️  Napaka pri izvajanju Clippy",
-        warn_patterns=[r'warning'],
-        error_patterns=[r'error'],
-        treat_exit_code=treat_clippy,
-        cwd=root_dir
-    ):
-        clippy_result.success = False
+        "cargo clippy --all-targets --all-features -- -D clippy::pedantic",
+        "cargo clippy --all-targets --all-features -- -D clippy::nursery"
+    ]
+    
+    for cmd in clippy_cmd:
+        if not run_check(
+            cmd,
+            install_hint="rustup component add clippy",
+            success_msg="✓ Clippy preverjanje uspešno: " + cmd.split(" -- ")[1],
+            fail_msg="⚠️  Napaka pri izvajanju Clippy",
+            warn_patterns=[r'warning'],
+            error_patterns=[r'error'],
+            treat_exit_code=treat_clippy,
+            cwd=root_dir
+        ):
+            clippy_result.success = False
     test_results.append(clippy_result)
 
     # 3. Testi
