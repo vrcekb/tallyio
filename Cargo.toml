@@ -1,0 +1,16 @@
+[package]
+name = "tallyio"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+thiserror = "1.0"
+anyhow = "1.0"
+
+[dev-dependencies]
+proptest = "1.0"
+tempfile = "3.10"
+anyhow = "1.0"  # For test utilities
+
+[workspace]
+resolver = "2"
