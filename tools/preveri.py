@@ -129,9 +129,11 @@ def main():
             clippy_result.success = False
     test_results.append(clippy_result)
 
-    # 3. Testi
-    test_suite_result = TestResult("Izvajanje testne suite")
-    print_header("3. IZVAJANJE TESTNE SUITE")
+    # 3. Testi in pokritost
+    test_suite_result = TestResult("Izvajanje testne suite in pokritost kode")
+    print_header("3. IZVAJANJE TESTNE SUITE IN POKRITOST")
+    
+    # Izvedi teste
     if not run_check(
         "cargo test --all -- --nocapture",
         success_msg="✓ Vsi testi so uspešno opravljeni",
@@ -140,6 +142,25 @@ def main():
     ):
         test_suite_result.success = False
         test_suite_result.errors.append("Nekateri testi niso uspeli")
+    
+    # Preveri pokritost kode
+    coverage_dir = os.path.join(root_dir, "target", "tarpaulin")
+    os.makedirs(coverage_dir, exist_ok=True)
+    
+    if not run_check(
+        "cargo tarpaulin --out html --output-dir target/tarpaulin",
+        install_hint="cargo install cargo-tarpaulin",
+        success_msg="✓ Poročilo o pokritosti kode je generirano",
+        fail_msg="⚠️  Napaka pri generiranju poročila o pokritosti",
+        cwd=root_dir
+    ):
+        test_suite_result.success = False
+        test_suite_result.errors.append("Generiranje poročila o pokritosti ni uspelo")
+    else:
+        report_path = os.path.join(coverage_dir, "tarpaulin-report.html")
+        if os.path.exists(report_path):
+            test_suite_result.warnings.append(f"Poročilo o pokritosti je na voljo v: {report_path}")
+    
     test_results.append(test_suite_result)
 
     # 4. Dokumentacija
