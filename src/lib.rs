@@ -1,4 +1,4 @@
-//! TallyIO - A Rust library for handling calculations with proper error handling
+//! `TallyIO` - A Rust library for handling calculations with proper error handling
 
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
@@ -8,7 +8,7 @@
 
 use thiserror::Error;
 
-/// Custom error type for the TallyIO library
+/// Custom error type for the `TallyIO` library
 #[derive(Error, Debug)]
 pub enum TallyError {
     /// I/O related errors
