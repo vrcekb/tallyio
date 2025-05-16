@@ -51,8 +51,9 @@ jobs:
     - name: Check for unused dependencies
       run: |
         rustup toolchain install nightly --component rust-src
-        cargo +nightly install cargo-udeps --locked
-        cargo +nightly udeps --all-targets --all-features
+        rustup default nightly
+        cargo install cargo-udeps --locked
+        cargo udeps --all-targets --all-features
     
     - name: Check for security vulnerabilities
       uses: actions-rs/audit-check@v1
@@ -116,12 +117,12 @@ jobs:
         
         # Generiramo podatke o pokritosti v HTML obliki za lokalno uporabo
         echo "Generating coverage report..."
-        cargo tarpaulin --out Html --output-dir target/coverage
+        cargo tarpaulin --out html --output-dir target/coverage
         echo "Local coverage report available at: file://$(pwd)/target/coverage/tarpaulin-report.html"
         
         # Generiramo tudi XML za morebitno pošiljanje na Codecov
         echo "Generating Codecov report..."
-        cargo tarpaulin --out Xml --output-dir target/coverage
+        cargo tarpaulin --out xml --output-dir target/coverage
         ./grcov target/coverage/cobertura.xml -s . -t cobertura --branch --ignore-not-existing -o target/coverage/coverage.xml
     
     - name: Upload to Codecov

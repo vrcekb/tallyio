@@ -70,7 +70,24 @@ class TestResult:
         self.errors = []
         self.warnings = []
 
+def set_rust_env():
+    """Nastavi okoljske spremenljivke za optimalno delovanje Rust orodij."""
+    env_vars = {
+        "CARGO_TERM_COLOR": "always",
+        "RUST_BACKTRACE": "1",
+        "CARGO_INCREMENTAL": "0",
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "RUSTFLAGS": "-D warnings",
+        "CARGO_UNSTABLE_SPARSE_REGISTRY": "true",
+        "CARGO_REGISTRIES_CRATES_IO_PROTOCOL": "sparse"
+    }
+    for key, value in env_vars.items():
+        os.environ[key] = value
+
 def main():
+    # Nastavi okoljske spremenljivke
+    set_rust_env()
+    
     # Poišči root direktorij (kjer je Cargo.lock ali Cargo.toml)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = script_dir
@@ -203,9 +220,34 @@ def main():
                 deps_result.warnings.append(f"Najdene so neuporabljene odvisnosti: {', '.join(matches)}")
             return False
         return exit_code == 0
+    # Najprej namestimo nightly toolchain in cargo-udeps
     if not run_check(
+        "rustup toolchain install nightly --component rust-src",
+        success_msg="✓ Nightly toolchain je nameščen",
+        fail_msg="⚠️  Napaka pri namestitvi nightly toolchain",
+        cwd=root_dir
+    ):
+        deps_result.success = False
+        deps_result.errors.append("Napaka pri namestitvi nightly toolchain")
+    elif not run_check(
+        "rustup default nightly",
+        success_msg="✓ Nightly toolchain je nastavljen kot privzeti",
+        fail_msg="⚠️  Napaka pri nastavljanju nightly toolchain",
+        cwd=root_dir
+    ):
+        deps_result.success = False
+        deps_result.errors.append("Napaka pri nastavljanju nightly toolchain")
+    elif not run_check(
+        "cargo install cargo-udeps --locked",
+        success_msg="✓ Cargo-udeps je nameščen",
+        fail_msg="⚠️  Napaka pri namestitvi cargo-udeps",
+        cwd=root_dir
+    ):
+        deps_result.success = False
+        deps_result.errors.append("Napaka pri namestitvi cargo-udeps")
+    # Zdaj lahko preverimo neuporabljene odvisnosti
+    elif not run_check(
         "cargo udeps --all-targets --all-features",
-        install_hint="cargo install cargo-udeps",
         success_msg="✓ Ni neuporabljenih odvisnosti",
         fail_msg="⚠️  Napaka pri preverjanju neuporabljenih odvisnosti",
         treat_exit_code=treat_udeps,
