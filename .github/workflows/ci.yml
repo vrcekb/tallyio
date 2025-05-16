@@ -46,22 +46,34 @@ jobs:
         cargo clippy --all-targets --all-features -- -D clippy::pedantic
         cargo clippy --all-targets --all-features -- -D clippy::nursery
     
-    - name: Check for unused dependencies
-      run: |
-        rustup toolchain install nightly --component rust-src
-        rustup default nightly
-        cargo install cargo-udeps --locked
-        cargo udeps --all-targets --all-features
-    
-    - name: Check for security vulnerabilities
-      uses: actions-rs/audit-check@v1
+  unused-deps:
+    name: Check Unused Dependencies
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Rust nightly
+      uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Check for outdated dependencies
-      run: |
-        cargo install cargo-outdated
-        cargo outdated -R
+        toolchain: nightly
+        components: rust-src
+
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
+    - name: Install cargo-udeps
+      run: cargo install cargo-udeps --locked
+
+    - name: Check for unused dependencies
+      run: cargo udeps --all-targets --all-features
     
   test:
     name: Test Suite
@@ -100,36 +112,36 @@ jobs:
     
     - name: Run tests
       run: cargo test --all --no-fail-fast -- --nocapture
-    
-    - name: Generate test coverage (Linux only)
-      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-      id: coverage
+      
+    - name: Install cargo-tarpaulin
+      run: cargo install cargo-tarpaulin
+      
+    - name: Generate coverage report
       run: |
-        # Namestimo potrebna orodja
-        echo "Installing tools..."
-        curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
-        wget -O - -q https://raw.githubusercontent.com/mozilla/grcov/master/grcov.ps1 > grcov.ps1
-        cargo install cargo-tarpaulin
-        
-        # Generiramo podatke o pokritosti v HTML obliki za lokalno uporabo
-        echo "Generating coverage report..."
+        # HTML poročilo za GitHub Pages
         cargo tarpaulin --out html --output-dir target/coverage
-        echo "Local coverage report available at: file://$(pwd)/target/coverage/tarpaulin-report.html"
         
-        # Generiramo tudi XML za morebitno pošiljanje na Codecov
-        echo "Generating Codecov report..."
+        # XML poročilo za Codecov
         cargo tarpaulin --out xml --output-dir target/coverage
-        ./grcov target/coverage/cobertura.xml -s . -t cobertura --branch --ignore-not-existing -o target/coverage/coverage.xml
-    
-    - name: Upload to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        
+    - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
-        file: target/coverage/coverage.xml
+        file: target/coverage/cobertura.xml
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
         verbose: true
+        
+    - name: Deploy coverage report to GitHub Pages
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: target/coverage
+        branch: gh-pages
+        target-folder: coverage
+        clean: true
+    
 
   doc:
     name: Documentation
@@ -164,7 +176,7 @@ jobs:
   release:
     name: Create Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [check, test, doc]
+    needs: [check, test, doc, unused-deps]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
