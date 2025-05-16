@@ -21,11 +21,9 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Set up Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
-        profile: minimal
         toolchain: stable
-        override: true
         components: rustfmt, clippy
     
     - name: Cache cargo registry
@@ -84,12 +82,10 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Set up Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
-        profile: minimal
         toolchain: ${{ matrix.rust }}
         target: ${{ matrix.target }}
-        override: true
     
     - name: Cache cargo registry
       uses: actions/cache@v3
@@ -143,11 +139,9 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Set up Rust
-      uses: actions-rs/toolchain@v1
+      uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
-        profile: minimal
         toolchain: stable
-        override: true
         components: rust-docs
     
     - name: Generate documentation
