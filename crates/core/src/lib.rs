@@ -350,7 +350,7 @@ mod tests {
 
         assert_eq!(*value, 42);
         assert_eq!(arena.allocation_count(), 1);
-        assert!(elapsed.as_micros() < 100, "Previsoka latenca: {elapsed:?}");
+        assert!(elapsed.as_nanos() < 500, "Previsoka latenca: {elapsed:?}");
     }
 
     #[test]
@@ -383,7 +383,7 @@ mod tests {
         let elapsed = start.elapsed();
 
         assert_eq!(value, Some(42));
-        assert!(elapsed.as_micros() < 100, "Previsoka latenca: {elapsed:?}");
+        assert!(elapsed.as_nanos() < 500, "Previsoka latenca: {elapsed:?}");
     }
 
     #[test]
