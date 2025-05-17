@@ -72,7 +72,11 @@ impl SecureStorage {
     ///
     /// # Errors
     /// Vrne napako, če shranjevanje ne uspe
-    pub async fn store<T: Serialize + Sync>(&self, key: &str, value: &T) -> Result<(), StorageError> {
+    pub async fn store<T: Serialize + Sync>(
+        &self,
+        key: &str,
+        value: &T,
+    ) -> Result<(), StorageError> {
         // Serializiraj podatke
         let serialized = bincode::serialize(value).map_err(|_| StorageError::SerializationError)?;
 

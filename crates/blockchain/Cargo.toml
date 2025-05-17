@@ -9,8 +9,3 @@ thiserror = "2.0"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
-proptest = "1.4.0"
-criterion = { version = "0.5", features = ["html_reports"] }
-fake = { version = "2.9" }
-tracing = "0.1"
-tracing-subscriber = "0.3"
