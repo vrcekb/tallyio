@@ -1,0 +1,44 @@
+[package]
+name = "tallyio-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+arbitrary = { version = "1", features = ["derive"] }
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+# Odvisnosti za različne module
+[dependencies.core]
+path = "../../crates/core"
+
+[dependencies.secure_storage]
+path = "../../crates/secure_storage"
+
+# Fuzz target za Queue operacije
+[[bin]]
+name = "queue_operations"
+path = "fuzz_targets/queue_operations.rs"
+test = false
+doc = false
+
+# Fuzz target za kriptografske operacije
+[[bin]]
+name = "crypto_operations"
+path = "fuzz_targets/crypto_operations.rs"
+test = false
+doc = false
+
+# Fuzz target za MEV validacijo podatkov
+[[bin]]
+name = "mev_data_validation"
+path = "fuzz_targets/mev_data_validation.rs"
+test = false
+doc = false

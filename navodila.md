@@ -1,5 +1,9 @@
 # TallyIO - Razvojna navodila
 
+## 0. Uvodne zahteve
+- Preberi E:\alpha\Tallyio\Tallyio načrt.md in shrani v spomin
+- Preberi E:\alpha\Tallyio\avodila.md in shrani v spomin
+
 ## 1. Performančne zahteve
 - Vsaka kritična pot MORA imeti latenco pod 0.1ms
 - Uporabi zero-allocation design na kritičnih poteh
@@ -15,9 +19,7 @@
 - Uporabljaj kriptografske primitive iz preverjenih knjižnic (ring, openssl)
 
 ## 3. Kodne konvencije
-- Pred vsako spremembo kode poženi `cargo check`
-- Po vsaki spremembi poženi `cargo clippy`
-- Po clippy popravkih poženi `cargo fmt`
+- Po vsaki spremembi poženi E:\alpha\Tallyio\preveri.py
 - Vse javne funkcije MORAJO imeti dokumentacijo
 - Implementiraj teste za vsako novo funkcionalnost
 - Sledi Rust best practices in idiomom
@@ -37,11 +39,19 @@
 - Miniminiziraj število odvisnosti v kritičnih poteh
 
 ## 6. Testiranje
-- Piši unit teste za vse javne funkcije
-- Implementiraj integracijske teste za kritične poti
-- Dodaj performance teste za latency-sensitive kodo
-- Uporabljaj proper test fixtures in mocks
-- Testiraj error handling poti
+- Piši unit teste za vse javne funkcije. Pokrij logiko v vsakem lib.rs in podmodulih. Vsaka funkcija mora imeti testne primere za pričakovane rezultate in robne pogoje.
+- Implementiraj integracijske teste za kritične poti. Ustvari tests/ mapo z realnimi interakcijami med core, strategies, blockchain, wallet in network za validacijo sistemskega obnašanja.
+- Dodaj performance teste za latency-sensitive kodo. Benchmarki (benches/) naj merijo core::executor, mempool, engine in strategije. Uporabi criterion z metriko <1ms.
+- Uporabljaj property-based teste za preverjanje pravilnosti in robustnosti. S proptest pokrij algebraične lastnosti in robne pogoje v optimization, risk, oracle, strategy, transaction.
+- Dodaj panic teste za nevarne funkcije. Uporabi #[should_panic] kjerkoli uporabljajo unwrap, expect, ali so druge točke napake.
+- Piši doc teste. Vključi /// dokumentacijo z validnimi primeri uporabe, ki se samodejno testirajo.
+- Uporabi fuzz teste za nepredvidljive inpute. Z cargo-fuzz in arbitrary generiraj neveljavne/robne inpute za transakcije, strategije in parserje.
+- Dodaj stress teste za stabilnost. Simuliraj desetine tisoč zaporednih klicev kritičnih poti v ločenih niti. Testiraj memory leaks in CPU load.
+- Izvedi security fuzzing za kritične točke. Fuzzaj RPC inpute, wallet key management, API endpoint-e in tx signing funkcionalnosti za robustnost in odpornost na napade.
+- Vzpostavi regression test za vsako znano napako. Shrani minimalne primerke, ki povzročijo napake, kot stalni test primeri (npr. regression_test_issue_472.rs).
+- Implementiraj end-to-end teste na testnetih. Validiraj celoten MEV flow od mempool zaznave do izvršene transakcije na realnem testnetu (npr. Goerli, Sepolia).
+- Testiraj vse Result, Option, match in if let poti. Vsaka veja naj bo eksplicitno testirana, vključno z Err, None, fallback, timeout, cancellation scenariji.
+- Uporabljaj test fixtures in mocks za izolacijo. Mockaj zunanje servise (npr. RPC, WebSocket, DEX) za deterministične in ponovljive teste. Izogibaj se testom, ki zahtevajo dostop do produkcijskega interneta.
 
 ## 7. Optimizacije
 - Profiliraj kodo redno
@@ -90,7 +100,7 @@
 ### a) Rustfmt konfiguracija
 Ustvari `rustfmt.toml` v root direktoriju:
 ```toml
-edition = "2021"
+edition = "2024"
 max_width = 100
 use_small_heuristics = "Max"
 ```
@@ -197,7 +207,7 @@ jobs:
 cargo install cargo-tarpaulin
 cargo tarpaulin --out Html
 ```
-- Zahtevaj minimalno 80% coverage za kritične poti
+- Zahtevaj minimalno 100% coverage.
 
 ## 16. Extra varnostne zahteve
 

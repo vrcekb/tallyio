@@ -26,24 +26,7 @@ javascript = true
 search = true
 
 # Nastavitve za Clippy
-[clippy]
-# Omogoči vse Clippy opozorila
-all-targets = true
-all-features = true
-warnings = [
-    "clippy::all",
-    "clippy::pedantic",
-    "clippy::nursery",
-    "clippy::cargo",
-]
-
-# Ignoriraj določena opozorila
-allow = [
-    "clippy::module_name_repetitions",
-    "clippy::multiple_crate_versions",
-    "clippy::missing_errors_doc",
-    "clippy::missing_panics_doc",
-]
+# Opomba: Nastavitve za Clippy so zdaj v .clippy.toml datoteki
 
 # Nastavitve za Rustfmt
 [rustfmt]

@@ -1,0 +1,32 @@
+{
+  "short_name": "TallyIO",
+  "name": "TallyIO Dashboard",
+  "description": "DeFi trading dashboard for blockchain strategies",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0ea5e9",
+  "background_color": "#f9fafb",
+  "orientation": "portrait",
+  "categories": ["finance", "business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your dashboard",
+      "url": "/"
+    },
+    {
+      "name": "Strategies",
+      "short_name": "Strategies",
+      "description": "Manage your strategies",
+      "url": "/strategies"
+    }
+  ]
+}

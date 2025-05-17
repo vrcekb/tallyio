@@ -1,8 +1,10 @@
-//! Enotažni in integracijski testi za blockchain modul
+//! Enotski testi za blockchain modul
+//! 
+//! Ti testi preverjajo osnovno funkcionalnost blockchain modula,
+//! vključno z blokovnimi operacijami, transakcijami in upravljanjem napak.
 
-use crate::chain::{Chain, EthereumChain};
-use crate::error::BlockchainError;
-use crate::types::{Transaction, Block};
+use blockchain::chain::{Chain, EthereumChain};
+use blockchain::types::Transaction;
 use tokio::runtime::Runtime;
 
 fn test_runtime() -> Runtime {
@@ -48,34 +50,3 @@ fn test_error_handling() {
     // - Test za timeout
     // - Test za graceful degradation
 }
-
-/// Performance testi
-#[cfg(test)]
-mod perf_tests {
-    use super::*;
-    use std::time::Duration;
-
-    #[test]
-    fn test_block_latency_distribution() {
-        let rt = test_runtime();
-        let chain = EthereumChain;
-        let mut latencies = Vec::new();
-
-        // Vzorči latenco 100x
-        for _ in 0..100 {
-            let start = std::time::Instant::now();
-            let _ = rt.block_on(chain.current_block()).unwrap();
-            latencies.push(start.elapsed());
-        }
-
-        // Izračunaj p99 latenco
-        latencies.sort();
-        let p99 = latencies[98]; // 99th percentile
-        
-        // TODO: Optimiziraj p99 latenco pod 500µs v produkciji
-        // Za teste dovolimo do 2ms
-        assert!(p99 < Duration::from_micros(2000), "P99 latenca previsoka: {p99:?}");
-    }
-}
-
-

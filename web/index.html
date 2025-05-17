@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="sl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <meta name="description" content="TallyIO Dashboard - DeFi trading dashboard for blockchain strategies" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TallyIO" />
+    <link rel="apple-touch-icon" href="/favicon.ico" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>TallyIO Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Zamenjava Neue Haas Grotesk z Inter */
+      body {
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Splash screen za PWA */
+      .splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #0ea5e9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+
+      .splash-screen.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .splash-logo {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 24px;
+      }
+
+      .splash-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid white;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .splash-screen {
+          background-color: #0c4a6e;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Splash screen za PWA -->
+    <div id="splash-screen" class="splash-screen">
+      <img src="/favicon.ico" alt="TallyIO Logo" class="splash-logo" />
+      <div class="splash-spinner"></div>
+    </div>
+
+    <script>
+      // Skrij splash screen po nalaganju aplikacije
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const splashScreen = document.getElementById('splash-screen');
+          if (splashScreen) {
+            splashScreen.classList.add('hidden');
+            setTimeout(function() {
+              splashScreen.style.display = 'none';
+            }, 500);
+          }
+        }, 1000);
+      });
+    </script>
+
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Offline fallback stran -->
+    <script>
+      // Preveri, ali je stran offline
+      window.addEventListener('online', () => {
+        document.body.classList.remove('offline');
+      });
+
+      window.addEventListener('offline', () => {
+        document.body.classList.add('offline');
+      });
+    </script>
+  </body>
+</html>
