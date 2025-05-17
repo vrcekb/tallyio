@@ -72,7 +72,7 @@ impl SecureStorage {
     ///
     /// # Errors
     /// Vrne napako, če shranjevanje ne uspe
-    pub async fn store<T: Serialize>(&self, key: &str, value: &T) -> Result<(), StorageError> {
+    pub async fn store<T: Serialize + Sync>(&self, key: &str, value: &T) -> Result<(), StorageError> {
         // Serializiraj podatke
         let serialized = bincode::serialize(value).map_err(|_| StorageError::SerializationError)?;
 
@@ -101,7 +101,7 @@ impl SecureStorage {
     ///
     /// # Errors
     /// Vrne napako, če nalaganje ne uspe
-    pub async fn load<T: DeserializeOwned>(&self, key: &str) -> Result<T, StorageError> {
+    pub async fn load<T: DeserializeOwned + Sync>(&self, key: &str) -> Result<T, StorageError> {
         // Preveri, če datoteka obstaja
         if !self.storage_path.exists() {
             return Err(StorageError::NotFound);

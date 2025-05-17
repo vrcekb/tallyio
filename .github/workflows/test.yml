@@ -99,11 +99,17 @@ jobs:
       - name: Install grcov
         run: cargo install grcov
       
+      - name: Set up Rust nightly for coverage
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: nightly
+          components: llvm-tools-preview
+
       - name: Run tests with coverage
         env:
           RUSTFLAGS: "-Zinstrument-coverage"
           LLVM_PROFILE_FILE: "tallyio-%p-%m.profraw"
-        run: cargo test --workspace
+        run: cargo +nightly test --workspace
       
       - name: Generate coverage report
         run: |
