@@ -64,7 +64,43 @@ cargo test --all
 
 # Check code quality
 cargo clippy --all-targets -- -D warnings
+
+# Run quick checks (recommended before every commit)
+.\scripts\quick-check.ps1
 ```
+
+## 🔄 Local Development & CI/CD Consistency
+
+TallyIO ensures **identical validation** between local development and CI/CD:
+
+### Local Quick Check
+```powershell
+# Run all checks locally (mirrors CI exactly)
+.\scripts\quick-check.ps1
+
+# Individual checks available:
+cargo fmt --all -- --check                    # Code formatting
+cargo clippy --all-targets --all-features -- -D warnings  # Ultra-strict linting
+cargo test --all                              # Unit & integration tests
+cargo test --all --release                    # Performance tests
+cargo audit --ignore RUSTSEC-2023-0071 --ignore RUSTSEC-2024-0421 --ignore RUSTSEC-2025-0009  # Security audit
+cargo tarpaulin --all-features --workspace --fail-under 95  # Code coverage (95%+)
+```
+
+### GitHub Actions CI
+- **`.github/workflows/ci.yml`** - Main CI pipeline (mirrors quick-check.ps1)
+- **`.github/workflows/security.yml`** - Extended security checks
+- **`.github/workflows/release.yml`** - Release automation
+
+### Security Vulnerabilities (Temporarily Ignored)
+Current known issues waiting for upstream fixes:
+- **RUSTSEC-2023-0071**: RSA Marvin Attack (no fix available)
+- **RUSTSEC-2024-0421**: idna vulnerability (waiting for web3 update)
+- **RUSTSEC-2025-0009**: ring AES panic (waiting for ethers update)
+- **RUSTSEC-2025-0010**: ring unmaintained (now maintained by rustls)
+- **RUSTSEC-2024-0384**: instant unmaintained (used by ethers)
+
+✅ **All checks pass identically in both local and CI environments**
 
 ## 📊 Performance Benchmarks
 

@@ -93,7 +93,7 @@ try {
 # 3. Zero Panic Check
 Write-Host "Checking zero panic policy..." -ForegroundColor Yellow
 $panicCount = 0
-$patterns = @("\.unwrap\(\)", "\.expect\(", "panic!", "todo!", "unimplemented!")
+$patterns = @('\.unwrap\(\)', '\.expect\(', 'panic!', 'todo!', 'unimplemented!')
 
 foreach ($pattern in $patterns) {
     $files = Get-ChildItem -Path "crates" -Filter "*.rs" -Recurse
