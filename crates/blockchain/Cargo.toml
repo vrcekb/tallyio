@@ -18,6 +18,10 @@ web3 = { workspace = true }
 sha3 = { workspace = true }
 secp256k1 = { workspace = true }
 
+# Security fixes for transitive dependencies
+idna = { workspace = true }
+ring = { workspace = true }
+
 # Internal dependencies
 tallyio-core = { path = "../core" }
 

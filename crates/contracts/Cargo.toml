@@ -9,4 +9,9 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 ethers = { workspace = true }
+
+# Security fixes for transitive dependencies
+idna = { workspace = true }
+ring = { workspace = true }
+
 tallyio-core = { path = "../core" }

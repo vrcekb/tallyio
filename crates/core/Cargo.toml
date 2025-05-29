@@ -17,6 +17,7 @@ chrono = { workspace = true }
 # Core-specific
 num-traits = "0.2"
 uuid = { version = "1.6", features = ["v4", "serde"] }
+libc = "0.2"
 
 [dev-dependencies]
 criterion = "0.5"

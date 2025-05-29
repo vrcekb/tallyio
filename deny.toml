@@ -55,10 +55,10 @@ deny = [
     # Insecure or deprecated crates
     { name = "openssl", reason = "Use rustls instead for better security" },
     { name = "native-tls", reason = "Use rustls for consistent behavior" },
-    
+
     # Problematic async runtimes
     { name = "async-std", reason = "Use tokio for consistency" },
-    
+
     # Insecure random number generators
     { name = "rand_core", version = "<0.6", reason = "Use newer version for security" },
 ]
@@ -90,7 +90,16 @@ notice = "warn"
 
 # Ignore specific advisories (use sparingly)
 ignore = [
-    # Example: "RUSTSEC-2020-0001",
+    # RSA Marvin Attack - no fix available yet, used only via sqlx-mysql
+    "RUSTSEC-2023-0071",
+    # idna - waiting for upstream web3 library update
+    "RUSTSEC-2024-0421",
+    # ring - waiting for upstream ethers library update
+    "RUSTSEC-2025-0009",
+    # ring unmaintained warning - now maintained by rustls team
+    "RUSTSEC-2025-0010",
+    # instant unmaintained - used by ethers, waiting for upstream update
+    "RUSTSEC-2024-0384",
 ]
 
 # 📦 Source verification
