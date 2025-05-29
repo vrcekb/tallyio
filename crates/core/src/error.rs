@@ -30,10 +30,10 @@ impl CriticalError {
     #[must_use]
     pub const fn code(&self) -> u16 {
         match self {
-            Self::Invalid(code) |
-            Self::OutOfMemory(code) |
-            Self::Timeout(code) |
-            Self::ResourceExhausted(code) => *code,
+            Self::Invalid(code)
+            | Self::OutOfMemory(code)
+            | Self::Timeout(code)
+            | Self::ResourceExhausted(code) => *code,
         }
     }
 
@@ -88,7 +88,9 @@ impl CoreError {
     /// A new `CoreError::Parse` variant
     #[must_use]
     pub fn parse<S: Into<String>>(message: S) -> Self {
-        Self::Parse { message: message.into() }
+        Self::Parse {
+            message: message.into(),
+        }
     }
 
     /// Create a config error
@@ -100,7 +102,9 @@ impl CoreError {
     /// A new `CoreError::Config` variant
     #[must_use]
     pub fn config<S: Into<String>>(message: S) -> Self {
-        Self::Config { message: message.into() }
+        Self::Config {
+            message: message.into(),
+        }
     }
 
     /// Check if error is critical

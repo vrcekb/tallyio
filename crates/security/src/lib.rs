@@ -31,6 +31,7 @@ impl SecurityManager {
 
 impl Default for SecurityManager {
     fn default() -> Self {
-        #[allow(clippy::expect_used)] Self::new().expect("Failed to create SecurityManager")
+        #[allow(clippy::expect_used)]
+        Self::new().expect("Failed to create SecurityManager")
     }
 }

@@ -29,7 +29,9 @@ pub mod affinity {
                 CPU_SET(core_id, &mut set);
 
                 if sched_setaffinity(0, mem::size_of::<cpu_set_t>(), &set) != 0 {
-                    return Err(crate::CoreError::Critical(crate::CriticalError::Invalid(100)));
+                    return Err(crate::CoreError::Critical(crate::CriticalError::Invalid(
+                        100,
+                    )));
                 }
             }
         }
@@ -68,13 +70,16 @@ pub mod memory {
     pub fn alloc_aligned<T>(count: usize, align: usize) -> Result<*mut T, crate::CoreError> {
         let layout = Layout::from_size_align(
             std::mem::size_of::<T>() * count,
-            align.max(std::mem::align_of::<T>())
-        ).map_err(|_| crate::CoreError::Critical(crate::CriticalError::OutOfMemory(200)))?;
+            align.max(std::mem::align_of::<T>()),
+        )
+        .map_err(|_| crate::CoreError::Critical(crate::CriticalError::OutOfMemory(200)))?;
 
         unsafe {
             let ptr = alloc_zeroed(layout).cast::<T>();
             if ptr.is_null() {
-                Err(crate::CoreError::Critical(crate::CriticalError::OutOfMemory(201)))
+                Err(crate::CoreError::Critical(
+                    crate::CriticalError::OutOfMemory(201),
+                ))
             } else {
                 Ok(ptr)
             }
@@ -93,7 +98,7 @@ pub mod memory {
     pub unsafe fn dealloc_aligned<T>(ptr: *mut T, count: usize, align: usize) {
         let layout = Layout::from_size_align_unchecked(
             std::mem::size_of::<T>() * count,
-            align.max(std::mem::align_of::<T>())
+            align.max(std::mem::align_of::<T>()),
         );
         dealloc(ptr.cast::<u8>(), layout);
     }
@@ -248,7 +253,8 @@ pub mod validation {
     /// # Returns
     /// `Ok(())` if data is valid
     pub const fn validate_tx_data(data: &[u8]) -> Result<(), CoreError> {
-        if data.len() > 1_000_000 { // 1MB limit
+        if data.len() > 1_000_000 {
+            // 1MB limit
             return Err(CoreError::Critical(CriticalError::Invalid(400)));
         }
         Ok(())

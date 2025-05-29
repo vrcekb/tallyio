@@ -1,9 +1,9 @@
 //! Core types for `TallyIO` - Cache-optimized, zero-copy where possible
 
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU64, Ordering};
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
 
 /// Transaction ID - optimized for hashing and comparison
 ///
@@ -276,7 +276,8 @@ impl Metrics {
     /// * `latency_ns` - Processing latency in nanoseconds
     pub fn record_transaction(&self, latency_ns: u64) {
         self.transactions_processed.fetch_add(1, Ordering::Relaxed);
-        self.total_latency_ns.fetch_add(latency_ns, Ordering::Relaxed);
+        self.total_latency_ns
+            .fetch_add(latency_ns, Ordering::Relaxed);
     }
 
     /// Record MEV opportunity found
@@ -306,7 +307,11 @@ impl Metrics {
     pub fn average_latency_ns(&self) -> u64 {
         let total = self.total_latency_ns.load(Ordering::Relaxed);
         let count = self.transactions_processed.load(Ordering::Relaxed);
-        if count > 0 { total / count } else { 0 }
+        if count > 0 {
+            total / count
+        } else {
+            0
+        }
     }
 }
 

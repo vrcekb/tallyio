@@ -8,14 +8,14 @@
 
 use std::sync::atomic::{AtomicU64, Ordering};
 
-pub mod types;
 pub mod engine;
 pub mod error;
+pub mod types;
 pub mod utils;
 
+pub use engine::TallyEngine;
 pub use error::{CoreError, CriticalError};
 pub use types::*;
-pub use engine::TallyEngine;
 
 /// Global performance counter for monitoring
 static OPERATION_COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -54,7 +54,10 @@ mod tests {
         let start = Instant::now();
         increment_operations();
         let elapsed = start.elapsed();
-        assert!(elapsed < Duration::from_millis(1), "Operation took {elapsed:?}");
+        assert!(
+            elapsed < Duration::from_millis(1),
+            "Operation took {elapsed:?}"
+        );
     }
 
     #[test]
@@ -75,7 +78,10 @@ mod tests {
         let _result = engine.process_next();
         let elapsed = start.elapsed();
 
-        assert!(elapsed < Duration::from_millis(1), "Engine processing took {elapsed:?}");
+        assert!(
+            elapsed < Duration::from_millis(1),
+            "Engine processing took {elapsed:?}"
+        );
         Ok(())
     }
 
@@ -99,6 +105,9 @@ mod tests {
         let _opportunity = TallyEngine::scan_mev_opportunity(&tx);
         let elapsed = start.elapsed();
 
-        assert!(elapsed < Duration::from_micros(100), "MEV scanning took {elapsed:?}");
+        assert!(
+            elapsed < Duration::from_micros(100),
+            "MEV scanning took {elapsed:?}"
+        );
     }
 }

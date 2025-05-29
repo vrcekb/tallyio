@@ -1,9 +1,9 @@
 //! `TallyIO` Engine - Ultra-performant transaction processing core
 
+use crate::{CoreError, CriticalError, Metrics, Price, Transaction};
+use crossbeam::queue::SegQueue;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Instant;
-use crossbeam::queue::SegQueue;
-use crate::{CoreError, CriticalError, Transaction, Metrics, Price};
 
 /// High-performance transaction processing engine
 ///
@@ -111,12 +111,11 @@ impl TallyEngine {
     fn process_transaction_internal(
         &self,
         tx: Transaction,
-        start: Instant
+        start: Instant,
     ) -> ProcessedTransaction {
         // Validate transaction
         if tx.gas_price.value() == 0 {
-            let processing_time = u64::try_from(start.elapsed().as_nanos())
-                .unwrap_or(u64::MAX);
+            let processing_time = u64::try_from(start.elapsed().as_nanos()).unwrap_or(u64::MAX);
             self.metrics.record_transaction(processing_time);
             return ProcessedTransaction {
                 original: tx,
@@ -133,8 +132,7 @@ impl TallyEngine {
             None
         };
 
-        let processing_time = u64::try_from(start.elapsed().as_nanos())
-            .unwrap_or(u64::MAX);
+        let processing_time = u64::try_from(start.elapsed().as_nanos()).unwrap_or(u64::MAX);
 
         // Record metrics
         self.metrics.record_transaction(processing_time);
@@ -143,7 +141,10 @@ impl TallyEngine {
         }
 
         // Ensure <1ms latency
-        debug_assert!(processing_time < 1_000_000, "Processing took {processing_time}ns");
+        debug_assert!(
+            processing_time < 1_000_000,
+            "Processing took {processing_time}ns"
+        );
 
         ProcessedTransaction {
             original: tx,
@@ -171,14 +172,18 @@ impl TallyEngine {
 
             // Common DEX method signatures (simplified)
             match method_sig {
-                [0xa9, 0x05, 0x9c, 0xbb] => { // swapExactTokensForTokens
+                [0xa9, 0x05, 0x9c, 0xbb] => {
+                    // swapExactTokensForTokens
                     // Simplified arbitrage detection
-                    if tx.gas_price.value() > 50_000_000_000 { // 50 gwei
+                    if tx.gas_price.value() > 50_000_000_000 {
+                        // 50 gwei
                         return Some(Price::new(tx.value.value() / 100)); // 1% opportunity
                     }
                 }
-                [0x38, 0xed, 0x17, 0x39] => { // swapExactETHForTokens
-                    if tx.value.value() > 1_000_000_000_000_000_000 { // > 1 ETH
+                [0x38, 0xed, 0x17, 0x39] => {
+                    // swapExactETHForTokens
+                    if tx.value.value() > 1_000_000_000_000_000_000 {
+                        // > 1 ETH
                         return Some(Price::new(tx.value.value() / 200)); // 0.5% opportunity
                     }
                 }
