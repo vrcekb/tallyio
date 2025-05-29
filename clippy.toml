@@ -43,9 +43,9 @@ disallowed-methods = [
     "std::option::Option::unwrap",
     "std::result::Result::unwrap",
     # Note: expect is allowed for Default implementations and documented cases
-    "std::panic::panic",
-    "std::unimplemented",
-    "std::todo",
+    "panic!",
+    "unimplemented!",
+    "todo!",
 
     # Potentially unsafe allocations (except when explicitly allowed)
     "std::alloc::alloc",
@@ -59,12 +59,12 @@ disallowed-methods = [
 # Disallowed types for safety
 disallowed-types = [
     # Prefer specific error types over generic ones
-    "std::boxed::Box<dyn std::error::Error>",
+    "Box<dyn std::error::Error>",
 
     # Prefer atomic types over mutex for simple counters
-    "std::sync::Mutex<u64>",
-    "std::sync::Mutex<u32>",
-    "std::sync::Mutex<usize>",
+    "Mutex<u64>",
+    "Mutex<u32>",
+    "Mutex<usize>",
 
     # Prefer crossbeam over std channels for performance
     "std::sync::mpsc::Receiver",

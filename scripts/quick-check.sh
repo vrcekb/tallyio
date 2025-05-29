@@ -32,14 +32,15 @@ fi
 echo -e "${YELLOW}📎 Running ultra-strict clippy...${NC}"
 if cargo clippy --all-targets --all-features -- \
     -D warnings \
+    -D clippy::all \
     -D clippy::pedantic \
     -D clippy::nursery \
     -D clippy::correctness \
     -D clippy::suspicious \
     -D clippy::perf \
-    -W clippy::redundant_allocation \
-    -W clippy::needless_collect \
-    -W clippy::suboptimal_flops \
+    -D clippy::redundant_allocation \
+    -D clippy::needless_collect \
+    -D clippy::suboptimal_flops \
     -A clippy::missing_docs_in_private_items \
     -D clippy::infinite_loop \
     -D clippy::while_immutable_condition \
