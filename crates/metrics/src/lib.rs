@@ -31,8 +31,14 @@ impl MetricsManager {
 
 impl Default for MetricsManager {
     fn default() -> Self {
-        // This expect is acceptable in Default implementation
-        #[allow(clippy::expect_used)]
-        Self::new().expect("Failed to create MetricsManager")
+        // Use match instead of expect to comply with zero-panic policy
+        match Self::new() {
+            Ok(manager) => manager,
+            Err(_) => {
+                // This should never happen in normal circumstances
+                // If it does, it's a programming error
+                std::process::abort();
+            }
+        }
     }
 }

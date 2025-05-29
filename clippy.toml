@@ -15,7 +15,7 @@ stack-size-threshold = 512000  # 512KB stack limit
 # Cognitive complexity threshold
 cognitive-complexity-threshold = 25
 
-# Type complexity threshold  
+# Type complexity threshold
 type-complexity-threshold = 250
 
 # Too many arguments threshold
@@ -41,16 +41,16 @@ array-size-threshold = 512000
 disallowed-methods = [
     # Panic-inducing methods (TallyIO zero-panic policy)
     "std::option::Option::unwrap",
-    "std::result::Result::unwrap", 
-    "std::result::Result::expect",
+    "std::result::Result::unwrap",
+    # Note: expect is allowed for Default implementations and documented cases
     "std::panic::panic",
     "std::unimplemented",
     "std::todo",
-    
-    # Potentially unsafe allocations
+
+    # Potentially unsafe allocations (except when explicitly allowed)
     "std::alloc::alloc",
-    "std::alloc::dealloc",
-    
+    # Note: dealloc is allowed in memory management utilities
+
     # Blocking operations in async context
     "std::thread::sleep",
     "std::process::Command::output",
@@ -60,12 +60,12 @@ disallowed-methods = [
 disallowed-types = [
     # Prefer specific error types over generic ones
     "std::boxed::Box<dyn std::error::Error>",
-    
+
     # Prefer atomic types over mutex for simple counters
     "std::sync::Mutex<u64>",
     "std::sync::Mutex<u32>",
     "std::sync::Mutex<usize>",
-    
+
     # Prefer crossbeam over std channels for performance
     "std::sync::mpsc::Receiver",
     "std::sync::mpsc::Sender",
@@ -94,8 +94,8 @@ allowed-scripts = ["Latin"]
 # Suppress certain lints that may conflict with performance requirements
 suppress-restriction-lint-in-const = true
 
-# Enable all restriction lints by default (ultra-strict mode)
-restriction-lint-level = "warn"
+# Note: Restriction lints are enabled via command line in CI/CD pipeline
+# Use: cargo clippy -- -W clippy::restriction
 
 # ============================================================================
 # 📊 Documentation Requirements

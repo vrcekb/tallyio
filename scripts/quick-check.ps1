@@ -12,10 +12,10 @@ $startTime = Get-Date
 
 # 🎨 1. Formatting
 Write-Host "🎨 Checking formatting..." -ForegroundColor Yellow
-try {
-    cargo fmt --all -- --check | Out-Null
+$fmtResult = cargo fmt --all -- --check 2>&1
+if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Formatting: OK" -ForegroundColor Green
-} catch {
+} else {
     Write-Host "❌ Formatting: FAILED" -ForegroundColor Red
     Write-Host "   Run: cargo fmt --all" -ForegroundColor Gray
     exit 1
@@ -34,12 +34,15 @@ try {
 # 🚨 3. Zero Panic Check
 Write-Host "🚨 Checking zero panic policy..." -ForegroundColor Yellow
 $panicCount = 0
-$patterns = @("unwrap", "expect", "panic!", "todo!", "unimplemented!")
+$patterns = @("\.unwrap\(\)", "\.expect\(", "panic!", "todo!", "unimplemented!")
 
 foreach ($pattern in $patterns) {
-    $matches = Select-String -Path "crates\*\src\*.rs" -Pattern $pattern -Recurse -ErrorAction SilentlyContinue
-    if ($matches) {
-        $panicCount += $matches.Count
+    $files = Get-ChildItem -Path "crates" -Filter "*.rs" -Recurse
+    foreach ($file in $files) {
+        $matches = Select-String -Path $file.FullName -Pattern $pattern -ErrorAction SilentlyContinue
+        if ($matches) {
+            $panicCount += $matches.Count
+        }
     }
 }
 

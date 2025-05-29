@@ -39,9 +39,10 @@ fi
 
 # 🚨 3. Zero Panic Check
 echo -e "${YELLOW}🚨 Checking zero panic policy...${NC}"
-PANIC_COUNT=$(grep -r "unwrap\|expect\|panic!\|todo!\|unimplemented!" crates/ 2>/dev/null | wc -l || echo "0")
+PANIC_COUNT=$(grep -r "\.unwrap()\|\.expect(\|panic!\|todo!\|unimplemented!" crates/ 2>/dev/null | wc -l || echo "0")
 if [ "$PANIC_COUNT" -gt 0 ]; then
     echo -e "${RED}❌ Zero panic: FAILED ($PANIC_COUNT violations)${NC}"
+    grep -rn "\.unwrap()\|\.expect(\|panic!\|todo!\|unimplemented!" crates/ 2>/dev/null || true
     exit 1
 else
     echo -e "${GREEN}✅ Zero panic: OK${NC}"
