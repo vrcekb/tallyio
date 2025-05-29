@@ -18,6 +18,7 @@ pub mod affinity {
     /// # Returns
     /// `Ok(())` if affinity was set successfully
     #[allow(clippy::unnecessary_wraps)] // Platform-specific implementation may need Result
+    #[allow(clippy::missing_const_for_fn)] // Cannot be const due to system calls
     pub fn set_core_affinity(core_id: usize) -> Result<(), crate::CoreError> {
         #[cfg(target_os = "linux")]
         {

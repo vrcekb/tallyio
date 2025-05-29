@@ -210,14 +210,12 @@ jobs:
       - name: ✅ All checks passed
         if: ${{ needs.quality.result == 'success' && needs.test.result == 'success' && needs.coverage.result == 'success' && needs.security.result == 'success' && needs.docker.result == 'success' }}
         run: |
-          echo "🎉 TallyIO CI/CD Pipeline completed successfully!"
+          echo "🎉 All CI checks passed successfully!"
           echo "✅ Code quality: PASSED"
           echo "✅ Tests: PASSED"
           echo "✅ Coverage: PASSED"
-          echo "✅ Security audit: PASSED"
-          echo "✅ Docker build: PASSED"
-          echo ""
-          echo "🚀 Ready for production deployment!"
+          echo "✅ Security: PASSED"
+          echo "✅ Docker: PASSED"
 
       - name: ❌ Some checks failed
         if: ${{ needs.quality.result != 'success' || needs.test.result != 'success' || needs.coverage.result != 'success' || needs.security.result != 'success' || needs.docker.result != 'success' }}
