@@ -4,7 +4,7 @@
 # ============================================================================
 # 🔧 Build Stage - Rust compilation with optimizations
 # ============================================================================
-FROM rust:1.75-slim as builder
+FROM rust:1.87-slim as builder
 
 # 📦 Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -114,7 +114,7 @@ CMD ["./bin/tallyio-api"]
 # ============================================================================
 # 🔧 Development Stage - For development with hot reload
 # ============================================================================
-FROM rust:1.75-slim as development
+FROM rust:1.87-slim as development
 
 # 📦 Install development dependencies
 RUN apt-get update && apt-get install -y \
