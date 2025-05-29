@@ -2,9 +2,9 @@ name: 🚀 TallyIO CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ master ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master ]
   schedule:
     # Run nightly at 2 AM UTC for dependency checks
     - cron: '0 2 * * *'
@@ -177,7 +177,7 @@ jobs:
   benchmarks:
     name: 📈 Performance Benchmarks
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -220,10 +220,10 @@ jobs:
       - name: ❌ Some checks failed
         if: ${{ needs.quality.result != 'success' || needs.test.result != 'success' || needs.coverage.result != 'success' || needs.security.result != 'success' || needs.docker.result != 'success' }}
         run: |
-          echo "❌ TallyIO CI/CD Pipeline failed:"
+          echo "❌ Some CI checks failed:"
           echo "Code quality: ${{ needs.quality.result }}"
           echo "Tests: ${{ needs.test.result }}"
           echo "Coverage: ${{ needs.coverage.result }}"
-          echo "Security audit: ${{ needs.security.result }}"
-          echo "Docker build: ${{ needs.docker.result }}"
+          echo "Security: ${{ needs.security.result }}"
+          echo "Docker: ${{ needs.docker.result }}"
           exit 1
