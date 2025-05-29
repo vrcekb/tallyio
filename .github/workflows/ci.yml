@@ -61,10 +61,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         rust: [stable]
-        include:
-          # Only test nightly on Ubuntu for performance
-          - os: ubuntu-latest
-            rust: nightly
 
     steps:
       - name: 📥 Checkout code
