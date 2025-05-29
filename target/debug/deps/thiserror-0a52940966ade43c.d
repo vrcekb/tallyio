@@ -1,0 +1,11 @@
+E:\ZETA\Tallyio\target\debug\deps\thiserror-0a52940966ade43c.d: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\aserror.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\display.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\provide.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\var.rs
+
+E:\ZETA\Tallyio\target\debug\deps\libthiserror-0a52940966ade43c.rlib: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\aserror.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\display.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\provide.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\var.rs
+
+E:\ZETA\Tallyio\target\debug\deps\libthiserror-0a52940966ade43c.rmeta: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\aserror.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\display.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\provide.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\var.rs
+
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\lib.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\aserror.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\display.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\provide.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\thiserror-2.0.12\src\var.rs:

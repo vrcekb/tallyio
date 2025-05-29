@@ -1,0 +1,12 @@
+[package]
+name = "tallyio-security"
+version = "0.1.0"
+edition = "2021"
+description = "TallyIO security modules"
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+sha3 = { workspace = true }
+secp256k1 = { workspace = true }
+tallyio-core = { path = "../core" }

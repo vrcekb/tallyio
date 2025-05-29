@@ -1,0 +1,12 @@
+[package]
+name = "tallyio-contracts"
+version = "0.1.0"
+edition = "2021"
+description = "TallyIO smart contracts integration"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+ethers = { workspace = true }
+tallyio-core = { path = "../core" }

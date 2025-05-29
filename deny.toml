@@ -1,0 +1,129 @@
+# 🔒 TallyIO Supply Chain Security Configuration
+# Ensures secure and compliant dependencies
+
+# 📋 License compliance
+[licenses]
+# Deny unlicensed crates
+unlicensed = "deny"
+
+# Allow only specific licenses compatible with financial software
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "CC0-1.0",
+    "Unlicense",
+    "0BSD",
+]
+
+# Deny problematic licenses
+deny = [
+    "GPL-2.0",
+    "GPL-3.0",
+    "AGPL-1.0",
+    "AGPL-3.0",
+    "LGPL-2.0",
+    "LGPL-2.1",
+    "LGPL-3.0",
+    "EUPL-1.2",
+    "OSL-3.0",
+    "SSPL-1.0",
+]
+
+# Confidence threshold for license detection
+confidence-threshold = 0.8
+
+# Exceptions for specific crates (if needed)
+exceptions = [
+    # Example: { allow = ["GPL-3.0"], name = "some-gpl-crate" },
+]
+
+# 🚫 Dependency bans
+[bans]
+# Warn about multiple versions of the same crate
+multiple-versions = "warn"
+
+# Allow wildcards in version requirements
+wildcards = "allow"
+
+# Deny specific crates
+deny = [
+    # Insecure or deprecated crates
+    { name = "openssl", reason = "Use rustls instead for better security" },
+    { name = "native-tls", reason = "Use rustls for consistent behavior" },
+    
+    # Problematic async runtimes
+    { name = "async-std", reason = "Use tokio for consistency" },
+    
+    # Insecure random number generators
+    { name = "rand_core", version = "<0.6", reason = "Use newer version for security" },
+]
+
+# Skip certain crates from analysis
+skip = [
+    # Development dependencies that might have different license requirements
+    { name = "criterion", reason = "Development dependency" },
+]
+
+# Skip trees rooted at certain crates
+skip-tree = [
+    # Example: { name = "some-dev-dependency", reason = "Development only" },
+]
+
+# 🔍 Security advisories
+[advisories]
+# Deny crates with known vulnerabilities
+vulnerability = "deny"
+
+# Warn about unmaintained crates
+unmaintained = "warn"
+
+# Deny yanked crates
+yanked = "deny"
+
+# Notice level for informational advisories
+notice = "warn"
+
+# Ignore specific advisories (use sparingly)
+ignore = [
+    # Example: "RUSTSEC-2020-0001",
+]
+
+# 📦 Source verification
+[sources]
+# Deny unknown registries
+unknown-registry = "deny"
+
+# Deny unknown git sources
+unknown-git = "deny"
+
+# Allow only specific registries
+allow-registry = [
+    "https://github.com/rust-lang/crates.io-index",
+]
+
+# Allow specific git sources (if needed)
+allow-git = [
+    # Example: "https://github.com/your-org/private-repo",
+]
+
+# 🎯 TallyIO specific configuration
+[graph]
+# Targets to check
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-pc-windows-msvc",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+    "aarch64-unknown-linux-gnu",
+]
+
+# Features to include in analysis
+all-features = true
+
+# Include dev dependencies in analysis
+include-dev = false

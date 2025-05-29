@@ -1,0 +1,22 @@
+[package]
+name = "tallyio-core"
+version = "0.1.0"
+edition = "2021"
+description = "TallyIO ultra-performant core - <1ms latency"
+
+[dependencies]
+# Workspace dependencies
+crossbeam = { workspace = true }
+parking_lot = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+# jemallocator = { workspace = true }  # Disabled on Windows
+
+# Core-specific
+num-traits = "0.2"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+[dev-dependencies]
+criterion = "0.5"

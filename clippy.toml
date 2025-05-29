@@ -1,0 +1,108 @@
+# 🚀 TallyIO Ultra-Strict Clippy Configuration
+# Enforces production-ready code quality for financial applications
+
+# ============================================================================
+# 🎯 Performance & Efficiency
+# ============================================================================
+
+# Warn about inefficient allocations
+avoid-breaking-exported-api = false
+msrv = "1.75"
+
+# Stack size limits for performance-critical code
+stack-size-threshold = 512000  # 512KB stack limit
+
+# Cognitive complexity threshold
+cognitive-complexity-threshold = 25
+
+# Type complexity threshold  
+type-complexity-threshold = 250
+
+# Too many arguments threshold
+too-many-arguments-threshold = 7
+
+# Too many lines threshold
+too-many-lines-threshold = 100
+
+# Trivially copy types threshold
+trivial-copy-size-limit = 128
+
+# Large enum variant threshold
+enum-variant-size-threshold = 200
+
+# Large stack arrays threshold
+array-size-threshold = 512000
+
+# ============================================================================
+# 🔒 Safety & Correctness
+# ============================================================================
+
+# Disallow certain unsafe operations
+disallowed-methods = [
+    # Panic-inducing methods (TallyIO zero-panic policy)
+    "std::option::Option::unwrap",
+    "std::result::Result::unwrap", 
+    "std::result::Result::expect",
+    "std::panic::panic",
+    "std::unimplemented",
+    "std::todo",
+    
+    # Potentially unsafe allocations
+    "std::alloc::alloc",
+    "std::alloc::dealloc",
+    
+    # Blocking operations in async context
+    "std::thread::sleep",
+    "std::process::Command::output",
+]
+
+# Disallowed types for safety
+disallowed-types = [
+    # Prefer specific error types over generic ones
+    "std::boxed::Box<dyn std::error::Error>",
+    
+    # Prefer atomic types over mutex for simple counters
+    "std::sync::Mutex<u64>",
+    "std::sync::Mutex<u32>",
+    "std::sync::Mutex<usize>",
+    
+    # Prefer crossbeam over std channels for performance
+    "std::sync::mpsc::Receiver",
+    "std::sync::mpsc::Sender",
+]
+
+# ============================================================================
+# 🎨 Code Style & Readability
+# ============================================================================
+
+# Single letter variable names to avoid
+single-char-binding-names-threshold = 4
+
+# Literal representation threshold
+literal-representation-threshold = 10
+
+# Verbose bit mask threshold
+verbose-bit-mask-threshold = 1
+
+# ============================================================================
+# 🚀 TallyIO Specific Settings
+# ============================================================================
+
+# Allow certain patterns common in financial applications
+allowed-scripts = ["Latin"]
+
+# Suppress certain lints that may conflict with performance requirements
+suppress-restriction-lint-in-const = true
+
+# Enable all restriction lints by default (ultra-strict mode)
+restriction-lint-level = "warn"
+
+# ============================================================================
+# 📊 Documentation Requirements
+# ============================================================================
+
+# Require documentation for public items
+missing-docs-in-crate-items = true
+
+# Check documentation examples
+check-private-items = false

@@ -1,0 +1,25 @@
+[package]
+name = "tallyio-blockchain"
+version = "0.1.0"
+edition = "2021"
+description = "TallyIO multi-chain blockchain integration"
+
+[dependencies]
+# Workspace dependencies
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+reqwest = { workspace = true }
+
+# Blockchain specific
+ethers = { workspace = true }
+web3 = { workspace = true }
+sha3 = { workspace = true }
+secp256k1 = { workspace = true }
+
+# Internal dependencies
+tallyio-core = { path = "../core" }
+
+[dev-dependencies]
+tokio-test = "0.4"

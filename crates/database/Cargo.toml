@@ -1,0 +1,13 @@
+[package]
+name = "tallyio-database"
+version = "0.1.0"
+edition = "2021"
+description = "TallyIO database abstractions"
+
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+sqlx = { workspace = true }
+redis = { workspace = true }
+tallyio-core = { path = "../core" }

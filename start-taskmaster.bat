@@ -1,0 +1,8 @@
+@echo off
+echo Starting Task Master AI MCP Server...
+cd /d C:\mcp-servers\claude-task-master
+set ANTHROPIC_API_KEY=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
+set PERPLEXITY_API_KEY=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
+set OPENAI_API_KEY=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
+node mcp-server\server.js
+pause

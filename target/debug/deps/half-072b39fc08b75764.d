@@ -1,0 +1,12 @@
+E:\ZETA\Tallyio\target\debug\deps\half-072b39fc08b75764.d: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\bfloat.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\bfloat\convert.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\binary16.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\binary16\arch.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\binary16\arch\x86.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\leading_zeros.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\slice.rs
+
+E:\ZETA\Tallyio\target\debug\deps\libhalf-072b39fc08b75764.rmeta: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\bfloat.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\bfloat\convert.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\binary16.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\binary16\arch.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\binary16\arch\x86.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\leading_zeros.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\slice.rs
+
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\lib.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\bfloat.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\bfloat\convert.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\binary16.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\binary16\arch.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\binary16\arch\x86.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\leading_zeros.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\half-2.6.0\src\slice.rs:

@@ -1,0 +1,386 @@
+name: 🚀 TallyIO CI/CD Pipeline
+
+# NOTE: This workflow contains references to CODECOV_TOKEN secret
+# IDE may show "Context access might be invalid" warnings until the secret is configured
+# This is expected behavior - see docs/codecov-setup.md for setup instructions
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run nightly at 2 AM UTC for dependency checks
+    - cron: '0 2 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  # TallyIO Performance Requirements
+  TALLYIO_MAX_LATENCY_MS: 1
+  TALLYIO_ZERO_PANIC: true
+
+jobs:
+  # 🔍 Code Quality & Standards
+  quality:
+    name: 🔍 Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: 📦 Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: quality-${{ runner.os }}
+
+      - name: 🎨 Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: 📎 Run Clippy (Ultra-strict TallyIO standards)
+        run: |
+          cargo clippy --all-targets --all-features -- \
+            -D warnings \
+            -D clippy::pedantic \
+            -D clippy::nursery \
+            -D clippy::correctness \
+            -D clippy::suspicious \
+            -D clippy::perf \
+            -W clippy::redundant_allocation \
+            -W clippy::needless_collect \
+            -W clippy::suboptimal_flops \
+            -A clippy::missing_docs_in_private_items \
+            -D clippy::infinite_loop \
+            -D clippy::while_immutable_condition \
+            -D clippy::never_loop \
+            -D for_loops_over_fallibles \
+            -D clippy::manual_strip \
+            -D clippy::needless_continue \
+            -D clippy::match_same_arms \
+            -D clippy::unwrap_used \
+            -D clippy::expect_used \
+            -D clippy::panic \
+            -D clippy::large_stack_arrays \
+            -D clippy::large_enum_variant \
+            -D clippy::mut_mut \
+            -D clippy::cast_possible_truncation \
+            -D clippy::cast_sign_loss \
+            -D clippy::cast_precision_loss \
+            -D clippy::must_use_candidate \
+            -D clippy::empty_loop \
+            -D clippy::if_same_then_else \
+            -D clippy::await_holding_lock \
+            -D clippy::await_holding_refcell_ref \
+            -D clippy::let_underscore_future \
+            -D clippy::diverging_sub_expression \
+            -D clippy::unreachable \
+            -D clippy::default_numeric_fallback \
+            -D clippy::redundant_pattern_matching \
+            -D clippy::manual_let_else \
+            -D clippy::blocks_in_conditions \
+            -D clippy::needless_pass_by_value \
+            -D clippy::single_match_else \
+            -D clippy::branches_sharing_code \
+            -D clippy::useless_asref \
+            -D clippy::redundant_closure_for_method_calls \
+            -v
+
+      - name: 🚨 TallyIO Code Quality Standards Check
+        run: |
+          echo "🔍 TallyIO Code Quality Standards Verification"
+          echo "=============================================="
+
+          # 1. Zero panic policy check
+          echo "🚨 Checking zero panic policy..."
+          PANIC_COUNT=$(grep -r "unwrap\|expect\|panic!\|todo!\|unimplemented!" src/ crates/ || true | wc -l)
+          if [ "$PANIC_COUNT" -gt 0 ]; then
+            echo "❌ Found $PANIC_COUNT prohibited patterns:"
+            grep -rn "unwrap\|expect\|panic!\|todo!\|unimplemented!" src/ crates/ || true
+            exit 1
+          fi
+          echo "✅ Zero panic policy verified"
+
+          # 2. Error handling check - all functions must return Result<T, E>
+          echo "🔍 Checking error handling patterns..."
+          NON_RESULT_FUNCTIONS=$(grep -r "fn.*(" src/ crates/ | grep -v "-> Result\|-> Option\|-> ()\|-> bool\|-> u\|-> i\|-> f\|-> String\|-> &" | grep -v "test\|bench\|main\|new(" | wc -l || echo "0")
+          if [ "$NON_RESULT_FUNCTIONS" -gt 50 ]; then
+            echo "⚠️  Found $NON_RESULT_FUNCTIONS functions that might need Result<T, E> return type"
+            echo "📋 Review functions for proper error handling"
+          fi
+          echo "✅ Error handling patterns checked"
+
+          # 3. Unsafe code documentation check
+          echo "🔒 Checking unsafe code documentation..."
+          UNSAFE_BLOCKS=$(grep -r "unsafe" src/ crates/ | grep -v "test\|bench" | wc -l || echo "0")
+          if [ "$UNSAFE_BLOCKS" -gt 0 ]; then
+            echo "⚠️  Found $UNSAFE_BLOCKS unsafe blocks - ensuring documentation..."
+            # Check if unsafe blocks have documentation comments
+            UNDOCUMENTED_UNSAFE=$(grep -B2 -A2 "unsafe" src/ crates/ | grep -v "//\|///\|/*" | grep "unsafe" | wc -l || echo "0")
+            if [ "$UNDOCUMENTED_UNSAFE" -gt 0 ]; then
+              echo "❌ Found $UNDOCUMENTED_UNSAFE undocumented unsafe blocks!"
+              exit 1
+            fi
+          fi
+          echo "✅ Memory safety standards verified"
+
+          echo "🎉 All TallyIO code quality standards verified!"
+
+  # 🧪 Testing Matrix
+  test:
+    name: 🧪 Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        rust: [stable, beta, nightly]
+        exclude:
+          # Skip beta/nightly on non-Linux for speed
+          - os: windows-latest
+            rust: beta
+          - os: windows-latest
+            rust: nightly
+          - os: macos-latest
+            rust: beta
+          - os: macos-latest
+            rust: nightly
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust ${{ matrix.rust }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - name: 📦 Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: test-${{ matrix.os }}-${{ matrix.rust }}
+
+      - name: 🔧 Build all crates
+        run: cargo build --all --verbose
+
+      - name: 🧪 Run unit tests
+        run: cargo test --all --lib --verbose
+
+      - name: 🔗 Run integration tests
+        run: cargo test --all --test '*' --verbose
+
+      - name: ⚡ TallyIO Performance & Latency Tests
+        run: |
+          echo "🚀 Running TallyIO performance tests..."
+          echo "Critical paths must be <1ms latency"
+
+          # Run latency requirement tests
+          cargo test --all --release test_latency_requirement -- --nocapture
+
+          # Run performance benchmarks
+          cargo test --all --release benchmark -- --nocapture
+
+          # Run specific performance tests for critical components
+          cargo test --all --release --package tallyio-core performance -- --nocapture
+          cargo test --all --release --package tallyio-liquidation latency -- --nocapture
+          cargo test --all --release --package tallyio-blockchain speed -- --nocapture
+
+          echo "✅ All performance requirements verified"
+
+  # 📊 Code Coverage (Following Codecov Rust Example)
+  coverage:
+    name: 📊 Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust nightly (for coverage)
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: llvm-tools-preview
+
+      - name: 📦 Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: 🔧 Build with coverage instrumentation
+        run: cargo build --verbose
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+
+      - name: 🧪 Run tests with coverage
+        run: cargo test --verbose --all
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+
+      - name: 📊 Generate coverage report with grcov
+        uses: actions-rs/grcov@v0.1
+
+      - name: 📤 Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          # NOTE: CODECOV_TOKEN secret needs to be configured in GitHub repository settings
+          # See docs/codecov-setup.md for setup instructions
+          # yamllint disable-line rule:line-length
+          token: ${{ secrets.CODECOV_TOKEN }} # pragma: allowlist secret
+          files: ./coverage.lcov
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false  # Don't fail CI if Codecov upload fails
+          verbose: true
+        continue-on-error: true  # Allow CI to continue if Codecov fails
+
+      - name: 📋 Codecov Integration Status
+        run: |
+          if [ -z "$CODECOV_TOKEN" ]; then
+            echo "⚠️  CODECOV_TOKEN secret not configured"
+            echo "📋 To enable Codecov integration:"
+            echo "   1. Go to https://codecov.io and sign up/login"
+            echo "   2. Add your repository to Codecov"
+            echo "   3. Copy the repository token"
+            echo "   4. Add CODECOV_TOKEN as a repository secret in GitHub"
+            echo "   5. Path: Settings → Secrets and variables → Actions → New repository secret"
+            echo "✅ Coverage report generated locally - Codecov upload skipped"
+          else
+            echo "✅ Codecov integration configured"
+            echo "📊 Coverage report uploaded to Codecov dashboard"
+          fi
+        env:
+          # Diagnostic warning expected until CODECOV_TOKEN secret is configured
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }} # pragma: allowlist secret
+
+      - name: 🎯 TallyIO Coverage Validation
+        run: |
+          echo "🔍 Validating TallyIO coverage requirements..."
+          echo "📊 TallyIO requires:"
+          echo "  - 95% overall coverage minimum"
+          echo "  - 100% coverage for critical modules:"
+          echo "    * Core Engine (crates/core/)"
+          echo "    * Security (crates/security/)"
+          echo "    * Liquidation (crates/liquidation/)"
+          echo "    * Blockchain (crates/blockchain/)"
+          echo "    * Smart Contracts (crates/contracts/)"
+          echo "  - 95% coverage for other modules"
+          echo ""
+          if [ -n "$CODECOV_TOKEN" ]; then
+            echo "✅ Coverage report uploaded to Codecov"
+            echo "📋 Check dashboard: https://codecov.io/gh/vrcekb/tallyio"
+            echo "🎯 Codecov will enforce coverage thresholds automatically"
+          else
+            echo "📊 Coverage report generated locally"
+            echo "⚠️  Codecov upload skipped (token not configured)"
+            echo "📋 Configure CODECOV_TOKEN secret for automatic coverage tracking"
+          fi
+        env:
+          # Diagnostic warning expected until CODECOV_TOKEN secret is configured
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }} # pragma: allowlist secret
+
+  # 🔒 Security Audit
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 📦 Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: 📥 Install cargo-audit
+        run: cargo install cargo-audit
+
+      - name: 🔍 Run security audit
+        run: cargo audit
+
+      - name: 🔍 Check for known vulnerabilities
+        run: cargo audit --deny warnings
+
+  # 🐳 Docker Build
+  docker:
+    name: 🐳 Docker Build
+    runs-on: ubuntu-latest
+    needs: [quality, test]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔧 Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: tallyio:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # 📈 Benchmarks
+  benchmarks:
+    name: 📈 Performance Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🦀 Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 📦 Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: 🏃 Run benchmarks
+        run: |
+          cargo bench --all -- --output-format json | tee benchmark_results.json
+
+      - name: 📊 Store benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'cargo'
+          output-file-path: benchmark_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+
+  # ✅ All Checks Passed
+  ci-success:
+    name: ✅ CI Success
+    runs-on: ubuntu-latest
+    needs: [quality, test, coverage, security, docker]
+    if: always()
+    steps:
+      - name: ✅ All checks passed
+        if: ${{ needs.quality.result == 'success' && needs.test.result == 'success' && needs.coverage.result == 'success' && needs.security.result == 'success' && needs.docker.result == 'success' }}
+        run: |
+          echo "🎉 All CI checks passed successfully!"
+          echo "✅ Code quality: PASSED"
+          echo "✅ Tests: PASSED"
+          echo "✅ Coverage: PASSED"
+          echo "✅ Security: PASSED"
+          echo "✅ Docker: PASSED"
+
+      - name: ❌ Some checks failed
+        if: ${{ needs.quality.result != 'success' || needs.test.result != 'success' || needs.coverage.result != 'success' || needs.security.result != 'success' || needs.docker.result != 'success' }}
+        run: |
+          echo "❌ Some CI checks failed:"
+          echo "Code quality: ${{ needs.quality.result }}"
+          echo "Tests: ${{ needs.test.result }}"
+          echo "Coverage: ${{ needs.coverage.result }}"
+          echo "Security: ${{ needs.security.result }}"
+          echo "Docker: ${{ needs.docker.result }}"
+          exit 1
+

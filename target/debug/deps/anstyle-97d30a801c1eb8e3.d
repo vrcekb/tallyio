@@ -1,0 +1,10 @@
+E:\ZETA\Tallyio\target\debug\deps\anstyle-97d30a801c1eb8e3.d: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\macros.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\color.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\effect.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\reset.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\style.rs
+
+E:\ZETA\Tallyio\target\debug\deps\libanstyle-97d30a801c1eb8e3.rmeta: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\macros.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\color.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\effect.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\reset.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\style.rs
+
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\lib.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\macros.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\color.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\effect.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\reset.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\anstyle-1.0.10\src\style.rs:

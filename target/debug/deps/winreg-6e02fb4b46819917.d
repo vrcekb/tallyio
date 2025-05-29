@@ -1,0 +1,11 @@
+E:\ZETA\Tallyio\target\debug\deps\winreg-6e02fb4b46819917.d: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\common.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\enums.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\reg_key.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\reg_key_metadata.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\reg_value.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\types.rs
+
+E:\ZETA\Tallyio\target\debug\deps\libwinreg-6e02fb4b46819917.rmeta: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\common.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\enums.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\reg_key.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\reg_key_metadata.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\reg_value.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\types.rs
+
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\lib.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\common.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\enums.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\reg_key.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\reg_key_metadata.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\reg_value.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\winreg-0.50.0\src\types.rs:

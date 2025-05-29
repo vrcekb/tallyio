@@ -1,0 +1,7 @@
+# GitHub Actions workflow attributes
+*.yml linguist-language=YAML
+*.yaml linguist-language=YAML
+
+# Disable certain linting rules for workflow files
+workflows/*.yml -text
+workflows/*.yaml -text

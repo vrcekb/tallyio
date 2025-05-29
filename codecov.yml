@@ -1,0 +1,181 @@
+# 📊 TallyIO Code Coverage Configuration
+# Ultra-strict testing requirements for financial applications
+# Repository: vrcekb/tallyio
+# Token: 194732cc-0084-48cd-8af3-4d72abdd3cdc (configured as GitHub secret)
+
+coverage:
+  # 🎯 Coverage targets - TallyIO Standards
+  precision: 2
+  round: down
+  range: "95...100"  # TallyIO requires minimum 95% overall
+
+  # 📊 Status checks - Ultra-strict requirements
+  status:
+    project:
+      # 🚨 Overall project must meet 95% minimum
+      default:
+        target: 95%
+        threshold: 1%
+        base: auto
+        if_ci_failed: error
+
+      # 🔥 Critical components require 100% coverage
+      core:
+        target: 100%
+        threshold: 0%
+        paths:
+          - "crates/core/"
+        if_ci_failed: error
+
+      # 🔒 Security components - 100% required
+      security:
+        target: 100%
+        threshold: 0%
+        paths:
+          - "crates/security/"
+        if_ci_failed: error
+
+      # 🎯 Trading logic - 100% required (critical path)
+      liquidation:
+        target: 100%
+        threshold: 0%
+        paths:
+          - "crates/liquidation/"
+        if_ci_failed: error
+
+      # 🔗 Blockchain integration - 100% required (critical path)
+      blockchain:
+        target: 100%
+        threshold: 0%
+        paths:
+          - "crates/blockchain/"
+        if_ci_failed: error
+
+      # 📊 Metrics and monitoring - 95% required
+      metrics:
+        target: 95%
+        threshold: 1%
+        paths:
+          - "crates/metrics/"
+        if_ci_failed: error
+
+      # 💾 Database operations - 95% required
+      database:
+        target: 95%
+        threshold: 1%
+        paths:
+          - "crates/database/"
+        if_ci_failed: error
+
+      # 🌐 API layer - 95% required
+      api:
+        target: 95%
+        threshold: 1%
+        paths:
+          - "crates/api/"
+        if_ci_failed: error
+
+      # 📜 Smart contracts - 100% required (critical path)
+      contracts:
+        target: 100%
+        threshold: 0%
+        paths:
+          - "crates/contracts/"
+        if_ci_failed: error
+
+    patch:
+      # 🚨 New code must meet even higher standards
+      default:
+        target: 95%
+        threshold: 2%
+        if_ci_failed: error
+
+      # 🔥 Critical path patches require 100%
+      critical-paths:
+        target: 100%
+        threshold: 0%
+        paths:
+          - "crates/core/"
+          - "crates/security/"
+          - "crates/liquidation/"
+          - "crates/blockchain/"
+          - "crates/contracts/"
+        if_ci_failed: error
+
+  # 📋 Ignore patterns
+  ignore:
+    - "tests/"
+    - "benches/"
+    - "examples/"
+    - "target/"
+    - "**/*.rs.bk"
+    - "**/main.rs"
+    - "crates/*/src/bin/"
+    - "crates/web-ui/"  # Frontend coverage handled separately
+
+# 💬 Comments configuration
+comment:
+  layout: "reach,diff,flags,tree,reach"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
+# 🏷️ Flags for different components
+flags:
+  core:
+    paths:
+      - crates/core/
+    carryforward: true
+
+  blockchain:
+    paths:
+      - crates/blockchain/
+    carryforward: true
+
+  liquidation:
+    paths:
+      - crates/liquidation/
+    carryforward: true
+
+  security:
+    paths:
+      - crates/security/
+    carryforward: true
+
+  database:
+    paths:
+      - crates/database/
+    carryforward: true
+
+  metrics:
+    paths:
+      - crates/metrics/
+    carryforward: true
+
+  api:
+    paths:
+      - crates/api/
+    carryforward: true
+
+  contracts:
+    paths:
+      - crates/contracts/
+    carryforward: true
+
+# 🔧 Parsing configuration
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+# 📊 GitHub integration
+github_checks:
+  annotations: true
+
+# 🚨 Fail CI if coverage drops significantly
+fail_ci_if_error: true
+

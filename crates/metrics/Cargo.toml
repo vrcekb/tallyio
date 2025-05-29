@@ -1,0 +1,12 @@
+[package]
+name = "tallyio-metrics"
+version = "0.1.0"
+edition = "2021"
+description = "TallyIO metrics and monitoring"
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+prometheus = { workspace = true }
+tracing = { workspace = true }
+tallyio-core = { path = "../core" }

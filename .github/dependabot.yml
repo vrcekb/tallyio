@@ -1,0 +1,185 @@
+# 🔄 TallyIO Automated Dependency Updates
+# Keeps dependencies secure and up-to-date
+
+version: 2
+
+updates:
+  # 🦀 Rust dependencies
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    
+    # 🎯 Update strategy
+    open-pull-requests-limit: 10
+    
+    # 🏷️ PR configuration
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    
+    # 📋 Labels
+    labels:
+      - "dependencies"
+      - "rust"
+      - "automated"
+    
+    # 👥 Reviewers
+    reviewers:
+      - "tallyio-team"
+    
+    # 🔍 Allow specific dependency types
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    
+    # 🚨 Ignore major version updates for critical dependencies
+    ignore:
+      # Core async runtime - major updates need careful review
+      - dependency-name: "tokio"
+        update-types: ["version-update:semver-major"]
+      
+      # Database driver - major updates need migration planning
+      - dependency-name: "sqlx"
+        update-types: ["version-update:semver-major"]
+      
+      # Blockchain libraries - major updates need thorough testing
+      - dependency-name: "ethers"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "web3"
+        update-types: ["version-update:semver-major"]
+    
+    # 📦 Group related updates
+    groups:
+      # Performance and concurrency
+      performance:
+        patterns:
+          - "tokio*"
+          - "crossbeam*"
+          - "rayon*"
+          - "parking_lot*"
+      
+      # Serialization
+      serialization:
+        patterns:
+          - "serde*"
+          - "bincode*"
+          - "serde_json*"
+      
+      # Database
+      database:
+        patterns:
+          - "sqlx*"
+          - "redis*"
+      
+      # Blockchain
+      blockchain:
+        patterns:
+          - "ethers*"
+          - "web3*"
+          - "secp256k1*"
+          - "sha3*"
+      
+      # Monitoring
+      monitoring:
+        patterns:
+          - "prometheus*"
+          - "tracing*"
+      
+      # Error handling
+      errors:
+        patterns:
+          - "thiserror*"
+          - "anyhow*"
+
+  # 🐳 Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+      timezone: "UTC"
+    
+    open-pull-requests-limit: 5
+    
+    commit-message:
+      prefix: "docker"
+      include: "scope"
+    
+    labels:
+      - "dependencies"
+      - "docker"
+      - "automated"
+
+  # 🔧 GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:00"
+      timezone: "UTC"
+    
+    open-pull-requests-limit: 5
+    
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"
+
+  # 📦 NPM dependencies (for web-ui if present)
+  - package-ecosystem: "npm"
+    directory: "/crates/web-ui"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "09:00"
+      timezone: "UTC"
+    
+    open-pull-requests-limit: 10
+    
+    commit-message:
+      prefix: "npm"
+      include: "scope"
+    
+    labels:
+      - "dependencies"
+      - "npm"
+      - "frontend"
+      - "automated"
+    
+    # 🚨 Ignore major framework updates
+    ignore:
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+    
+    groups:
+      # React ecosystem
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      
+      # Build tools
+      build-tools:
+        patterns:
+          - "webpack*"
+          - "babel*"
+          - "typescript*"
+      
+      # Testing
+      testing:
+        patterns:
+          - "jest*"
+          - "@testing-library/*"

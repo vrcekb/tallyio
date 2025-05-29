@@ -1,0 +1,11 @@
+[package]
+name = "tallyio-liquidation"
+version = "0.1.0"
+edition = "2021"
+description = "TallyIO liquidation strategies"
+
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tallyio-core = { path = "../core" }

@@ -1,0 +1,10 @@
+E:\ZETA\Tallyio\target\debug\deps\getrandom-9207e73c5d7861d3.d: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\backends.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\error.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\util.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\../README.md C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\backends\windows.rs
+
+E:\ZETA\Tallyio\target\debug\deps\libgetrandom-9207e73c5d7861d3.rmeta: C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\lib.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\backends.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\error.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\util.rs C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\../README.md C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\backends\windows.rs
+
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\lib.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\backends.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\error.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\util.rs:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\../README.md:
+C:\Users\Uporabnik\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\getrandom-0.3.3\src\backends\windows.rs:
