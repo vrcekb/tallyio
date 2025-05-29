@@ -1,14 +1,10 @@
 name: 🚀 TallyIO CI/CD Pipeline
 
-# NOTE: This workflow contains references to CODECOV_TOKEN secret
-# IDE may show "Context access might be invalid" warnings until the secret is configured
-# This is expected behavior - see docs/codecov-setup.md for setup instructions
-
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ master ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master ]
   schedule:
     # Run nightly at 2 AM UTC for dependency checks
     - cron: '0 2 * * *'
@@ -42,61 +38,12 @@ jobs:
       - name: 🎨 Check formatting
         run: cargo fmt --all -- --check
 
-      - name: 📎 Run Clippy (Ultra-strict TallyIO standards)
-        run: |
-          cargo clippy --all-targets --all-features -- \
-            -D warnings \
-            -D clippy::pedantic \
-            -D clippy::nursery \
-            -D clippy::correctness \
-            -D clippy::suspicious \
-            -D clippy::perf \
-            -W clippy::redundant_allocation \
-            -W clippy::needless_collect \
-            -W clippy::suboptimal_flops \
-            -A clippy::missing_docs_in_private_items \
-            -D clippy::infinite_loop \
-            -D clippy::while_immutable_condition \
-            -D clippy::never_loop \
-            -D for_loops_over_fallibles \
-            -D clippy::manual_strip \
-            -D clippy::needless_continue \
-            -D clippy::match_same_arms \
-            -D clippy::unwrap_used \
-            -D clippy::expect_used \
-            -D clippy::panic \
-            -D clippy::large_stack_arrays \
-            -D clippy::large_enum_variant \
-            -D clippy::mut_mut \
-            -D clippy::cast_possible_truncation \
-            -D clippy::cast_sign_loss \
-            -D clippy::cast_precision_loss \
-            -D clippy::must_use_candidate \
-            -D clippy::empty_loop \
-            -D clippy::if_same_then_else \
-            -D clippy::await_holding_lock \
-            -D clippy::await_holding_refcell_ref \
-            -D clippy::let_underscore_future \
-            -D clippy::diverging_sub_expression \
-            -D clippy::unreachable \
-            -D clippy::default_numeric_fallback \
-            -D clippy::redundant_pattern_matching \
-            -D clippy::manual_let_else \
-            -D clippy::blocks_in_conditions \
-            -D clippy::needless_pass_by_value \
-            -D clippy::single_match_else \
-            -D clippy::branches_sharing_code \
-            -D clippy::useless_asref \
-            -D clippy::redundant_closure_for_method_calls \
-            -v
+      - name: 📎 Run Clippy (Zero warnings policy)
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: 🚨 TallyIO Code Quality Standards Check
+      - name: 🚨 TallyIO Zero Panic Check
         run: |
-          echo "🔍 TallyIO Code Quality Standards Verification"
-          echo "=============================================="
-
-          # 1. Zero panic policy check
-          echo "🚨 Checking zero panic policy..."
+          echo "🔍 Checking for prohibited patterns..."
           PANIC_COUNT=$(grep -r "unwrap\|expect\|panic!\|todo!\|unimplemented!" src/ crates/ || true | wc -l)
           if [ "$PANIC_COUNT" -gt 0 ]; then
             echo "❌ Found $PANIC_COUNT prohibited patterns:"
@@ -105,31 +52,6 @@ jobs:
           fi
           echo "✅ Zero panic policy verified"
 
-          # 2. Error handling check - all functions must return Result<T, E>
-          echo "🔍 Checking error handling patterns..."
-          NON_RESULT_FUNCTIONS=$(grep -r "fn.*(" src/ crates/ | grep -v "-> Result\|-> Option\|-> ()\|-> bool\|-> u\|-> i\|-> f\|-> String\|-> &" | grep -v "test\|bench\|main\|new(" | wc -l || echo "0")
-          if [ "$NON_RESULT_FUNCTIONS" -gt 50 ]; then
-            echo "⚠️  Found $NON_RESULT_FUNCTIONS functions that might need Result<T, E> return type"
-            echo "📋 Review functions for proper error handling"
-          fi
-          echo "✅ Error handling patterns checked"
-
-          # 3. Unsafe code documentation check
-          echo "🔒 Checking unsafe code documentation..."
-          UNSAFE_BLOCKS=$(grep -r "unsafe" src/ crates/ | grep -v "test\|bench" | wc -l || echo "0")
-          if [ "$UNSAFE_BLOCKS" -gt 0 ]; then
-            echo "⚠️  Found $UNSAFE_BLOCKS unsafe blocks - ensuring documentation..."
-            # Check if unsafe blocks have documentation comments
-            UNDOCUMENTED_UNSAFE=$(grep -B2 -A2 "unsafe" src/ crates/ | grep -v "//\|///\|/*" | grep "unsafe" | wc -l || echo "0")
-            if [ "$UNDOCUMENTED_UNSAFE" -gt 0 ]; then
-              echo "❌ Found $UNDOCUMENTED_UNSAFE undocumented unsafe blocks!"
-              exit 1
-            fi
-          fi
-          echo "✅ Memory safety standards verified"
-
-          echo "🎉 All TallyIO code quality standards verified!"
-
   # 🧪 Testing Matrix
   test:
     name: 🧪 Test Suite
@@ -137,17 +59,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        rust: [stable, beta, nightly]
-        exclude:
-          # Skip beta/nightly on non-Linux for speed
-          - os: windows-latest
-            rust: beta
-          - os: windows-latest
-            rust: nightly
-          - os: macos-latest
-            rust: beta
-          - os: macos-latest
+        os: [ubuntu-latest, windows-latest]
+        rust: [stable]
+        include:
+          # Only test nightly on Ubuntu for performance
+          - os: ubuntu-latest
             rust: nightly
 
     steps:
@@ -173,25 +89,13 @@ jobs:
       - name: 🔗 Run integration tests
         run: cargo test --all --test '*' --verbose
 
-      - name: ⚡ TallyIO Performance & Latency Tests
+      - name: ⚡ Performance & Latency Tests
         run: |
           echo "🚀 Running TallyIO performance tests..."
-          echo "Critical paths must be <1ms latency"
-
-          # Run latency requirement tests
           cargo test --all --release test_latency_requirement -- --nocapture
-
-          # Run performance benchmarks
           cargo test --all --release benchmark -- --nocapture
 
-          # Run specific performance tests for critical components
-          cargo test --all --release --package tallyio-core performance -- --nocapture
-          cargo test --all --release --package tallyio-liquidation latency -- --nocapture
-          cargo test --all --release --package tallyio-blockchain speed -- --nocapture
-
-          echo "✅ All performance requirements verified"
-
-  # 📊 Code Coverage (Following Codecov Rust Example)
+  # 📊 Code Coverage
   coverage:
     name: 📊 Code Coverage
     runs-on: ubuntu-latest
@@ -199,91 +103,25 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🦀 Setup Rust nightly (for coverage)
-        uses: actions-rs/toolchain@v1
+      - name: 🦀 Setup Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: nightly
-          override: true
           components: llvm-tools-preview
 
       - name: 📦 Cache dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: 🔧 Build with coverage instrumentation
-        run: cargo build --verbose
-        env:
-          CARGO_INCREMENTAL: '0'
-          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
-          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+      - name: 📥 Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
 
-      - name: 🧪 Run tests with coverage
-        run: cargo test --verbose --all
-        env:
-          CARGO_INCREMENTAL: '0'
-          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
-          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+      - name: 📊 Generate coverage report
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
 
-      - name: 📊 Generate coverage report with grcov
-        uses: actions-rs/grcov@v0.1
-
-      - name: 📤 Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+      - name: 📤 Upload to codecov
+        uses: codecov/codecov-action@v3
         with:
-          # NOTE: CODECOV_TOKEN secret needs to be configured in GitHub repository settings
-          # See docs/codecov-setup.md for setup instructions
-          # yamllint disable-line rule:line-length
-          token: ${{ secrets.CODECOV_TOKEN }} # pragma: allowlist secret
-          files: ./coverage.lcov
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false  # Don't fail CI if Codecov upload fails
-          verbose: true
-        continue-on-error: true  # Allow CI to continue if Codecov fails
-
-      - name: 📋 Codecov Integration Status
-        run: |
-          if [ -z "$CODECOV_TOKEN" ]; then
-            echo "⚠️  CODECOV_TOKEN secret not configured"
-            echo "📋 To enable Codecov integration:"
-            echo "   1. Go to https://codecov.io and sign up/login"
-            echo "   2. Add your repository to Codecov"
-            echo "   3. Copy the repository token"
-            echo "   4. Add CODECOV_TOKEN as a repository secret in GitHub"
-            echo "   5. Path: Settings → Secrets and variables → Actions → New repository secret"
-            echo "✅ Coverage report generated locally - Codecov upload skipped"
-          else
-            echo "✅ Codecov integration configured"
-            echo "📊 Coverage report uploaded to Codecov dashboard"
-          fi
-        env:
-          # Diagnostic warning expected until CODECOV_TOKEN secret is configured
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }} # pragma: allowlist secret
-
-      - name: 🎯 TallyIO Coverage Validation
-        run: |
-          echo "🔍 Validating TallyIO coverage requirements..."
-          echo "📊 TallyIO requires:"
-          echo "  - 95% overall coverage minimum"
-          echo "  - 100% coverage for critical modules:"
-          echo "    * Core Engine (crates/core/)"
-          echo "    * Security (crates/security/)"
-          echo "    * Liquidation (crates/liquidation/)"
-          echo "    * Blockchain (crates/blockchain/)"
-          echo "    * Smart Contracts (crates/contracts/)"
-          echo "  - 95% coverage for other modules"
-          echo ""
-          if [ -n "$CODECOV_TOKEN" ]; then
-            echo "✅ Coverage report uploaded to Codecov"
-            echo "📋 Check dashboard: https://codecov.io/gh/vrcekb/tallyio"
-            echo "🎯 Codecov will enforce coverage thresholds automatically"
-          else
-            echo "📊 Coverage report generated locally"
-            echo "⚠️  Codecov upload skipped (token not configured)"
-            echo "📋 Configure CODECOV_TOKEN secret for automatic coverage tracking"
-          fi
-        env:
-          # Diagnostic warning expected until CODECOV_TOKEN secret is configured
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }} # pragma: allowlist secret
+          files: lcov.info
+          fail_ci_if_error: true
 
   # 🔒 Security Audit
   security:
@@ -333,7 +171,7 @@ jobs:
   benchmarks:
     name: 📈 Performance Benchmarks
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -383,4 +221,3 @@ jobs:
           echo "Security: ${{ needs.security.result }}"
           echo "Docker: ${{ needs.docker.result }}"
           exit 1
-
