@@ -16,7 +16,7 @@ pub enum WebUiError {
 
 pub type WebUiResult<T> = Result<T, WebUiError>;
 
-/// Web UI manager for TallyIO
+/// Web UI manager for `TallyIO`
 pub struct WebUiManager {
     render_count: std::sync::atomic::AtomicU64,
 }
@@ -37,10 +37,11 @@ impl WebUiManager {
     ///
     /// # Errors
     /// Returns error if component rendering fails
+    #[allow(clippy::unnecessary_wraps)] // API consistency with other crates
     pub fn render_component(&self, component: &str) -> WebUiResult<String> {
         self.render_count
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        Ok(format!("Rendered component: {}", component))
+        Ok(format!("Rendered component: {component}"))
     }
 }
 
@@ -123,8 +124,8 @@ mod tests {
     fn test_multiple_renders() -> WebUiResult<()> {
         let manager = WebUiManager::new()?;
 
-        for i in 0..10 {
-            manager.render_component(&format!("component_{}", i))?;
+        for i in 0_i32..10_i32 {
+            manager.render_component(&format!("component_{i}"))?;
         }
 
         assert_eq!(
@@ -144,15 +145,20 @@ mod tests {
         let manager = Arc::new(WebUiManager::new()?);
         let mut handles = vec![];
 
-        for i in 0..5 {
+        for i in 0_i32..5_i32 {
             let manager_clone = Arc::clone(&manager);
             let handle =
-                thread::spawn(move || manager_clone.render_component(&format!("concurrent_{}", i)));
+                thread::spawn(move || manager_clone.render_component(&format!("concurrent_{i}")));
             handles.push(handle);
         }
 
         for handle in handles {
-            handle.join().unwrap()?;
+            match handle.join() {
+                Ok(result) => {
+                    result?; // Process the result but ignore the return value
+                }
+                Err(_) => return Err(WebUiError::Ui("Thread join failed".to_string())),
+            }
         }
 
         assert_eq!(

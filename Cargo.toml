@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "crates/core",
-    "crates/blockchain", 
+    "crates/blockchain",
     "crates/liquidation",
     "crates/security",
     "crates/database",
@@ -66,3 +66,61 @@ strip = true
 [profile.dev]
 debug = true
 opt-level = 1
+
+[workspace.lints.rust]
+warnings = "deny"
+for_loops_over_fallibles = "deny"
+
+[workspace.lints.clippy]
+# Celotne skupine
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -1 }
+
+# Allow specifični linti
+missing_docs_in_private_items = "allow"
+
+# Vsi ostali specifični linti
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+exit = "deny"
+float_arithmetic = "warn"
+integer_division = "warn"
+mem_forget = "deny"
+redundant_allocation = "deny"
+needless_collect = "deny"
+suboptimal_flops = "deny"
+infinite_loop = "deny"
+while_immutable_condition = "deny"
+never_loop = "deny"
+manual_strip = "deny"
+needless_continue = "deny"
+match_same_arms = "deny"
+large_stack_arrays = "deny"
+large_enum_variant = "deny"
+mut_mut = "deny"
+cast_possible_truncation = "deny"
+cast_sign_loss = "deny"
+cast_precision_loss = "deny"
+must_use_candidate = "deny"
+empty_loop = "deny"
+if_same_then_else = "deny"
+await_holding_lock = "deny"
+await_holding_refcell_ref = "deny"
+let_underscore_future = "deny"
+diverging_sub_expression = "deny"
+unreachable = "deny"
+default_numeric_fallback = "deny"
+redundant_pattern_matching = "deny"
+manual_let_else = "deny"
+blocks_in_conditions = "deny"
+needless_pass_by_value = "deny"
+single_match_else = "deny"
+branches_sharing_code = "deny"
+useless_asref = "deny"
+redundant_closure_for_method_calls = "deny"

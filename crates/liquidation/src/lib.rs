@@ -34,6 +34,7 @@ impl LiquidationManager {
     ///
     /// # Errors
     /// Returns error if liquidation processing fails
+    #[allow(clippy::unnecessary_wraps)] // API consistency with other crates
     pub fn process_liquidation(&self, liquidation: &str) -> LiquidationResult<String> {
         self.liquidation_count
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -120,8 +121,8 @@ mod tests {
     fn test_multiple_operations() -> LiquidationResult<()> {
         let manager = LiquidationManager::new()?;
 
-        for i in 0..10 {
-            manager.process_liquidation(&format!("operation_{}", i))?;
+        for i in 0_i32..10_i32 {
+            manager.process_liquidation(&format!("operation_{i}"))?;
         }
 
         assert_eq!(
@@ -141,16 +142,21 @@ mod tests {
         let manager = Arc::new(LiquidationManager::new()?);
         let mut handles = vec![];
 
-        for i in 0..5 {
+        for i in 0_i32..5_i32 {
             let manager_clone = Arc::clone(&manager);
             let handle = thread::spawn(move || {
-                manager_clone.process_liquidation(&format!("concurrent_{}", i))
+                manager_clone.process_liquidation(&format!("concurrent_{i}"))
             });
             handles.push(handle);
         }
 
         for handle in handles {
-            handle.join().unwrap()?;
+            match handle.join() {
+                Ok(result) => {
+                    result?; // Process the result but ignore the return value
+                }
+                Err(_) => return Err(LiquidationError::Strategy("Thread join failed".to_string())),
+            }
         }
 
         assert_eq!(

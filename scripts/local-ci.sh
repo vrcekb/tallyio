@@ -318,20 +318,31 @@ else
 fi
 echo ""
 
-# 📊 9. Code Coverage (Optional)
+# 📊 9. Code Coverage (99% minimum requirement)
 if [ "$SKIP_COVERAGE" = false ]; then
-    log_step "Generating code coverage report..."
-    if ! check_command cargo-llvm-cov; then
-        log_warning "cargo-llvm-cov not found. Installing..."
-        cargo install cargo-llvm-cov
+    log_step "Analyzing code coverage (99% minimum requirement)..."
+    if ! check_command cargo-tarpaulin; then
+        log_warning "cargo-tarpaulin not found. Installing..."
+        cargo install cargo-tarpaulin
     fi
 
-    if cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info; then
-        results["coverage"]=true
-        log_success "Code coverage: PASSED"
-        echo -e "${GRAY}📊 Coverage report saved to: lcov.info${NC}"
+    echo -e "${GRAY}🔍 Running tarpaulin coverage analysis...${NC}"
+    COVERAGE_OUTPUT=$(cargo tarpaulin --all --out Stdout --out Lcov --skip-clean --verbose 2>&1)
+    COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep -oP '\d+\.\d+(?=% coverage)' | head -1)
+
+    if [ -n "$COVERAGE" ]; then
+        # Use bc for floating point comparison
+        if (( $(echo "$COVERAGE >= 99.0" | bc -l) )); then
+            results["coverage"]=true
+            log_success "Code Coverage: ${COVERAGE}% (≥99% TallyIO standard)"
+            echo -e "${GRAY}📊 Coverage report saved to: lcov.info${NC}"
+        else
+            log_error "Code Coverage: ${COVERAGE}% (≥99% required for TallyIO financial-grade standards)"
+            echo -e "${GRAY}💡 Increase test coverage to meet requirements.${NC}"
+        fi
     else
-        log_error "Code coverage: FAILED"
+        log_error "Code Coverage: Could not parse coverage output"
+        echo -e "${GRAY}🔧 Check tarpaulin installation and configuration.${NC}"
     fi
     echo ""
 fi

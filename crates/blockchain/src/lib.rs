@@ -37,10 +37,11 @@ impl BlockchainManager {
     ///
     /// # Errors
     /// Returns error if block processing fails
+    #[allow(clippy::unnecessary_wraps)] // API consistency with other crates
     pub fn process_block(&self, block: &str) -> BlockchainResult<String> {
         self.block_count
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        Ok(format!("Processed block: {}", block))
+        Ok(format!("Processed block: {block}"))
     }
 }
 
@@ -123,7 +124,7 @@ mod tests {
     fn test_multiple_blocks() -> BlockchainResult<()> {
         let manager = BlockchainManager::new()?;
 
-        for i in 0..10 {
+        for i in 0_i32..10_i32 {
             manager.process_block(&format!("block_{i}"))?;
         }
 
@@ -144,7 +145,7 @@ mod tests {
         let manager = Arc::new(BlockchainManager::new()?);
         let mut handles = vec![];
 
-        for i in 0..5 {
+        for i in 0_i32..5_i32 {
             let manager_clone = Arc::clone(&manager);
             let handle = thread::spawn(move || {
                 manager_clone.process_block(&format!("concurrent_block_{i}"))

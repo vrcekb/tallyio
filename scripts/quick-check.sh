@@ -102,6 +102,32 @@ else
     exit 1
 fi
 
+# 📊 5. Code Coverage (99% minimum requirement)
+echo -e "${YELLOW}📊 Checking code coverage (99% minimum)...${NC}"
+
+# Install tarpaulin if not present
+if ! command -v cargo-tarpaulin &> /dev/null; then
+    echo -e "${GRAY}Installing cargo-tarpaulin...${NC}"
+    cargo install cargo-tarpaulin &> /dev/null
+fi
+
+# Run coverage analysis
+COVERAGE_OUTPUT=$(cargo tarpaulin --all --out Stdout --skip-clean 2>&1)
+COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep -oP '\d+\.\d+(?=% coverage)' | head -1)
+
+if [ -n "$COVERAGE" ]; then
+    # Use bc for floating point comparison
+    if (( $(echo "$COVERAGE >= 99.0" | bc -l) )); then
+        echo -e "${GREEN}✅ Code coverage: ${COVERAGE}%${NC}"
+    else
+        echo -e "${RED}❌ Code coverage: ${COVERAGE}% - minimum 99% required${NC}"
+        exit 1
+    fi
+else
+    echo -e "${RED}❌ Could not parse coverage output${NC}"
+    exit 1
+fi
+
 END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
 

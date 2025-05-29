@@ -68,8 +68,7 @@ $clippyArgs = @(
     "-D", "clippy::single_match_else",
     "-D", "clippy::branches_sharing_code",
     "-D", "clippy::useless_asref",
-    "-D", "clippy::redundant_closure_for_method_calls",
-    "-v"
+    "-D", "clippy::redundant_closure_for_method_calls"
 )
 
 try {
@@ -114,6 +113,38 @@ try {
     Write-Host "OK: Tests" -ForegroundColor Green
 } catch {
     Write-Host "FAILED: Tests" -ForegroundColor Red
+    exit 1
+}
+
+# 5. Code Coverage (95% minimum requirement)
+Write-Host "Checking code coverage (95% minimum)..." -ForegroundColor Yellow
+try {
+    # Install tarpaulin if not present
+    if (-not (Get-Command cargo-tarpaulin -ErrorAction SilentlyContinue)) {
+        Write-Host "Installing cargo-tarpaulin..." -ForegroundColor Gray
+        cargo install cargo-tarpaulin | Out-Null
+    }
+
+    # Run coverage analysis
+    $coverageOutput = cargo tarpaulin --all --out Stdout --skip-clean 2>&1
+
+    # Extract coverage percentage
+    $coverageLine = $coverageOutput | Select-String "(\d+\.\d+)% coverage"
+    if ($coverageLine) {
+        $coverage = [double]($coverageLine.Matches[0].Groups[1].Value)
+
+        if ($coverage -ge 95.0) {
+            Write-Host "OK: Code coverage ($coverage%)" -ForegroundColor Green
+        } else {
+            Write-Host "FAILED: Code coverage ($coverage%) - minimum 95% required" -ForegroundColor Red
+            exit 1
+        }
+    } else {
+        Write-Host "FAILED: Could not parse coverage output" -ForegroundColor Red
+        exit 1
+    }
+} catch {
+    Write-Host "FAILED: Code coverage check" -ForegroundColor Red
     exit 1
 }
 

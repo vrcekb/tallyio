@@ -25,7 +25,7 @@ impl From<tungstenite::Error> for ApiError {
 
 pub type ApiResult<T> = Result<T, ApiError>;
 
-/// API manager for TallyIO
+/// API manager for `TallyIO`
 pub struct ApiManager {
     request_count: std::sync::atomic::AtomicU64,
 }
@@ -46,10 +46,11 @@ impl ApiManager {
     ///
     /// # Errors
     /// Returns error if request handling fails
+    #[allow(clippy::unnecessary_wraps)] // API consistency with other crates
     pub fn handle_request(&self, request: &str) -> ApiResult<String> {
         self.request_count
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        Ok(format!("Processed: {}", request))
+        Ok(format!("Processed: {request}"))
     }
 }
 
@@ -69,6 +70,8 @@ impl Default for ApiManager {
 }
 
 #[cfg(test)]
+#[allow(clippy::unnecessary_wraps)]
+#[allow(clippy::missing_errors_doc)]
 mod tests {
     use super::*;
     use std::time::Instant;
@@ -132,8 +135,8 @@ mod tests {
     fn test_multiple_requests() -> ApiResult<()> {
         let manager = ApiManager::new()?;
 
-        for i in 0..10 {
-            manager.handle_request(&format!("request_{}", i))?;
+        for i in 0_i32..10_i32 {
+            manager.handle_request(&format!("request_{i}"))?;
         }
 
         assert_eq!(
@@ -153,15 +156,24 @@ mod tests {
         let manager = Arc::new(ApiManager::new()?);
         let mut handles = vec![];
 
-        for i in 0..5 {
+        for i in 0_i32..5_i32 {
             let manager_clone = Arc::clone(&manager);
             let handle =
-                thread::spawn(move || manager_clone.handle_request(&format!("concurrent_{}", i)));
+                thread::spawn(move || manager_clone.handle_request(&format!("concurrent_{i}")));
             handles.push(handle);
         }
 
         for handle in handles {
-            handle.join().unwrap()?;
+            match handle.join() {
+                Ok(result) => {
+                    result?; // Process the result but ignore the return value
+                }
+                Err(_) => {
+                    return Err(ApiError::Core(tallyio_core::CoreError::Critical(
+                        tallyio_core::CriticalError::ResourceExhausted(500),
+                    )))
+                }
+            }
         }
 
         assert_eq!(
@@ -171,5 +183,14 @@ mod tests {
             5
         );
         Ok(())
+    }
+
+    #[test]
+    fn test_websocket_error_conversion() {
+        // Test From implementation for tungstenite::Error (lines 21-22)
+        let ws_error = tungstenite::Error::ConnectionClosed;
+        let api_error = ApiError::from(ws_error);
+
+        assert!(matches!(api_error, ApiError::WebSocket(_)));
     }
 }

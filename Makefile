@@ -108,6 +108,11 @@ test:
 	@echo "🧪 Running tests..."
 	@cargo test --all --verbose
 
+# 📊 Run code coverage analysis (99% minimum requirement)
+coverage:
+	@echo "📊 Running code coverage analysis (99% minimum requirement)..."
+	@cargo tarpaulin --all --out Stdout --out Lcov --skip-clean --verbose
+
 # 🔧 Build all crates
 build:
 	@echo "🔧 Building all crates..."
@@ -118,11 +123,7 @@ audit:
 	@echo "🔒 Running security audit..."
 	@cargo audit
 
-# 📊 Generate coverage report
-coverage:
-	@echo "📊 Generating coverage report..."
-	@cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
-	@echo "Coverage report saved to: lcov.info"
+
 
 # 🐳 Build Docker image
 docker:
@@ -145,7 +146,7 @@ clean:
 install-tools:
 	@echo "🔧 Installing required tools..."
 	@rustup component add rustfmt clippy
-	@cargo install cargo-audit cargo-llvm-cov
+	@cargo install cargo-audit cargo-tarpaulin
 
 # 🚀 Pre-commit workflow
 pre-commit: fmt quick

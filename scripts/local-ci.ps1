@@ -285,21 +285,38 @@ try {
 }
 Write-Host ""
 
-# 📊 9. Code Coverage (Optional)
+# 📊 9. Code Coverage (99% minimum requirement)
 if (-not $SkipCoverage) {
-    Write-Step "Generating code coverage report..."
+    Write-Step "Analyzing code coverage (99% minimum requirement)..."
     try {
-        if (-not (Test-Command "cargo-llvm-cov")) {
-            Write-Warning "cargo-llvm-cov not found. Installing..."
-            cargo install cargo-llvm-cov
+        if (-not (Test-Command "cargo-tarpaulin")) {
+            Write-Warning "cargo-tarpaulin not found. Installing..."
+            cargo install cargo-tarpaulin
         }
 
-        cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
-        $results["Coverage"] = $true
-        Write-Success "Code coverage: PASSED"
-        Write-Host "📊 Coverage report saved to: lcov.info" -ForegroundColor Gray
+        Write-Host "🔍 Running tarpaulin coverage analysis..." -ForegroundColor Gray
+        $coverageOutput = cargo tarpaulin --all --out Stdout --out Lcov --skip-clean --verbose 2>&1
+
+        # Extract coverage percentage
+        $coverageLine = $coverageOutput | Select-String "(\d+\.\d+)% coverage"
+        if ($coverageLine) {
+            $coverage = [double]($coverageLine.Matches[0].Groups[1].Value)
+
+            if ($coverage -ge 99.0) {
+                $results["Coverage"] = $true
+                Write-Success "Code Coverage: $coverage% (≥99% TallyIO standard)"
+                Write-Host "📊 Coverage report saved to: lcov.info" -ForegroundColor Gray
+            } else {
+                Write-Error "Code Coverage: $coverage% (≥99% required for TallyIO financial-grade standards)"
+                Write-Host "💡 Increase test coverage to meet requirements." -ForegroundColor Gray
+            }
+        } else {
+            Write-Error "Code Coverage: Could not parse coverage output"
+            Write-Host "🔧 Check tarpaulin installation and configuration." -ForegroundColor Gray
+        }
     } catch {
-        Write-Error "Code coverage: FAILED"
+        Write-Error "Code Coverage: FAILED"
+        Write-Host "❌ Error running coverage analysis: $($_.Exception.Message)" -ForegroundColor Gray
     }
     Write-Host ""
 }

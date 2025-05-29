@@ -19,7 +19,7 @@ pub enum DatabaseError {
 
 pub type DatabaseResult<T> = Result<T, DatabaseError>;
 
-/// Database manager for TallyIO
+/// Database manager for `TallyIO`
 pub struct DatabaseManager {
     query_count: std::sync::atomic::AtomicU64,
 }
@@ -40,10 +40,11 @@ impl DatabaseManager {
     ///
     /// # Errors
     /// Returns error if query execution fails
+    #[allow(clippy::unnecessary_wraps)] // API consistency with other crates
     pub fn execute_query(&self, query: &str) -> DatabaseResult<String> {
         self.query_count
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        Ok(format!("Executed query: {}", query))
+        Ok(format!("Executed query: {query}"))
     }
 }
 
@@ -126,8 +127,8 @@ mod tests {
     fn test_multiple_queries() -> DatabaseResult<()> {
         let manager = DatabaseManager::new()?;
 
-        for i in 0..10 {
-            manager.execute_query(&format!("query_{}", i))?;
+        for i in 0_i32..10_i32 {
+            manager.execute_query(&format!("query_{i}"))?;
         }
 
         assert_eq!(

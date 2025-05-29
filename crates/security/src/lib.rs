@@ -37,6 +37,7 @@ impl SecurityManager {
     ///
     /// # Errors
     /// Returns error if request validation fails
+    #[allow(clippy::unnecessary_wraps)] // API consistency with other crates
     pub fn validate_request(&self, request: &str) -> SecurityResult<String> {
         self.validation_count
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -123,8 +124,8 @@ mod tests {
     fn test_multiple_operations() -> SecurityResult<()> {
         let manager = SecurityManager::new()?;
 
-        for i in 0..10 {
-            manager.validate_request(&format!("operation_{}", i))?;
+        for i in 0_i32..10_i32 {
+            manager.validate_request(&format!("operation_{i}"))?;
         }
 
         assert_eq!(
@@ -144,15 +145,20 @@ mod tests {
         let manager = Arc::new(SecurityManager::new()?);
         let mut handles = vec![];
 
-        for i in 0..5 {
+        for i in 0_i32..5_i32 {
             let manager_clone = Arc::clone(&manager);
             let handle =
-                thread::spawn(move || manager_clone.validate_request(&format!("concurrent_{}", i)));
+                thread::spawn(move || manager_clone.validate_request(&format!("concurrent_{i}")));
             handles.push(handle);
         }
 
         for handle in handles {
-            handle.join().unwrap()?;
+            match handle.join() {
+                Ok(result) => {
+                    result?; // Process the result but ignore the return value
+                }
+                Err(_) => return Err(SecurityError::Auth("Thread join failed".to_string())),
+            }
         }
 
         assert_eq!(

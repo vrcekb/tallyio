@@ -37,6 +37,7 @@ impl ContractsManager {
     ///
     /// # Errors
     /// Returns error if contract deployment fails
+    #[allow(clippy::unnecessary_wraps)] // API consistency with other crates
     pub fn deploy_contract(&self, contract: &str) -> ContractsResult<String> {
         self.contract_count
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -123,8 +124,8 @@ mod tests {
     fn test_multiple_contracts() -> ContractsResult<()> {
         let manager = ContractsManager::new()?;
 
-        for i in 0..10 {
-            manager.deploy_contract(&format!("contract_{}", i))?;
+        for i in 0_i32..10_i32 {
+            manager.deploy_contract(&format!("contract_{i}"))?;
         }
 
         assert_eq!(

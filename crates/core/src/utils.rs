@@ -96,6 +96,7 @@ pub mod memory {
     /// - `ptr` is not used after this call
     /// - `count` and `align` match the original allocation
     /// - The pointer is not null
+    #[allow(clippy::disallowed_methods)]
     pub unsafe fn dealloc_aligned<T>(ptr: *mut T, count: usize, align: usize) {
         let layout = Layout::from_size_align_unchecked(
             std::mem::size_of::<T>() * count,
@@ -287,6 +288,9 @@ pub mod validation {
 }
 
 #[cfg(test)]
+#[allow(clippy::unnecessary_wraps)]
+#[allow(clippy::missing_errors_doc)]
+#[allow(clippy::disallowed_methods)]
 mod tests {
     use super::*;
     use std::time::Duration;
@@ -330,5 +334,101 @@ mod tests {
 
         let large_data = vec![0u8; 2_000_000];
         assert!(validation::validate_tx_data(&large_data).is_err());
+    }
+
+    #[test]
+    fn test_latency_timer_timeout() {
+        let timer = time::LatencyTimer::new(Duration::from_nanos(1));
+        std::thread::sleep(Duration::from_millis(1));
+        assert!(timer.check_timeout().is_err());
+    }
+
+    #[test]
+    fn test_latency_timer_elapsed() {
+        let timer = time::LatencyTimer::new(Duration::from_millis(100));
+        std::thread::sleep(Duration::from_millis(1));
+
+        let elapsed_nanoseconds = timer.elapsed_ns();
+        let elapsed_microseconds = timer.elapsed_us();
+
+        // Allow some tolerance for timing precision
+        assert!(elapsed_nanoseconds > 0);
+        assert!(elapsed_microseconds > 0);
+    }
+
+    #[test]
+    fn test_fast_hash() {
+        let value1 = "test string";
+        let value2 = "test string";
+        let value3 = "different string";
+
+        let hash1 = hash::fast_hash(&value1);
+        let hash2 = hash::fast_hash(&value2);
+        let hash3 = hash::fast_hash(&value3);
+
+        assert_eq!(hash1, hash2); // Same values should have same hash
+        assert_ne!(hash1, hash3); // Different values should have different hash
+    }
+
+    #[test]
+    fn test_memory_alignment() -> Result<(), CoreError> {
+        // Test that our alignment utilities work
+        let ptr = memory::alloc_aligned::<u64>(8, 64)?;
+        assert!(!ptr.is_null());
+
+        // Check alignment
+        let addr = ptr as usize;
+        assert_eq!(addr % 64, 0); // Should be 64-byte aligned
+
+        // Clean up
+        unsafe {
+            memory::dealloc_aligned(ptr, 8, 64);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn test_validation_edge_cases() {
+        // Test gas limit at boundary
+        assert!(validation::validate_gas(1, 30_000_000).is_ok()); // Max allowed
+        assert!(validation::validate_gas(1, 30_000_001).is_err()); // Over limit
+
+        // Test data at boundary
+        let boundary_data = vec![0u8; 1_000_000]; // Exactly at limit
+        assert!(validation::validate_tx_data(&boundary_data).is_ok());
+
+        let over_boundary = vec![0u8; 1_000_001]; // Over limit
+        assert!(validation::validate_tx_data(&over_boundary).is_err());
+    }
+
+    #[test]
+    fn test_core_affinity() {
+        // Test core affinity setting (should work on all platforms)
+        let result = affinity::set_core_affinity(0);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_memory_allocation_failure() {
+        // Test allocation with invalid parameters that would cause overflow
+        let result = memory::alloc_aligned::<u64>(usize::MAX / 8, 64);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_memory_allocation_success() -> Result<(), CoreError> {
+        // Test successful allocation to cover lines 79-82
+        let ptr = memory::alloc_aligned::<u32>(4, 32)?;
+        assert!(!ptr.is_null());
+
+        // Verify the pointer is properly aligned
+        let addr = ptr as usize;
+        assert_eq!(addr % 32, 0);
+
+        // Clean up
+        unsafe {
+            memory::dealloc_aligned(ptr, 4, 32);
+        }
+        Ok(())
     }
 }

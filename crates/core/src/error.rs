@@ -121,6 +121,8 @@ impl CoreError {
 pub type CoreResult<T> = Result<T, CoreError>;
 
 #[cfg(test)]
+#[allow(clippy::unnecessary_wraps)]
+#[allow(clippy::missing_errors_doc)]
 mod tests {
     use super::*;
 
@@ -138,5 +140,89 @@ mod tests {
 
         let critical = CoreError::Critical(CriticalError::Invalid(500));
         assert!(critical.is_critical());
+    }
+
+    #[test]
+    fn test_critical_error_variants() {
+        let invalid = CriticalError::Invalid(100);
+        let timeout = CriticalError::Timeout(200);
+        let out_of_memory = CriticalError::OutOfMemory(300);
+
+        assert_eq!(invalid.code(), 100);
+        assert_eq!(timeout.code(), 200);
+        assert_eq!(out_of_memory.code(), 300);
+
+        assert!(!invalid.is_recoverable());
+        assert!(timeout.is_recoverable());
+        assert!(out_of_memory.is_recoverable());
+    }
+
+    #[test]
+    fn test_core_error_config() {
+        let config_err = CoreError::config("invalid setting");
+        assert!(!config_err.is_critical());
+
+        assert!(matches!(config_err, CoreError::Config { .. }));
+        if let CoreError::Config { message } = config_err {
+            assert_eq!(message, "invalid setting");
+        }
+    }
+
+    #[test]
+    fn test_core_error_parse() {
+        let parse_err = CoreError::parse("failed to parse data");
+        assert!(!parse_err.is_critical());
+
+        assert!(matches!(parse_err, CoreError::Parse { .. }));
+        if let CoreError::Parse { message } = parse_err {
+            assert_eq!(message, "failed to parse data");
+        }
+    }
+
+    #[test]
+    fn test_error_from_conversions() {
+        // Test conversion from CriticalError
+        let critical = CriticalError::Invalid(404);
+        let core_err: CoreError = critical.into();
+        assert!(core_err.is_critical());
+
+        // Test conversion from io::Error
+        let io_err = std::io::Error::new(std::io::ErrorKind::NotFound, "file not found");
+        let core_err: CoreError = io_err.into();
+        assert!(!core_err.is_critical());
+    }
+
+    #[test]
+    fn test_error_display() {
+        let critical = CriticalError::Invalid(404);
+        let display = format!("{critical}");
+        assert!(display.contains("404"));
+
+        let core_err = CoreError::Critical(critical);
+        let display = format!("{core_err}");
+        assert!(display.contains("Critical error"));
+    }
+
+    #[test]
+    fn test_critical_error_copy() {
+        let err1 = CriticalError::Invalid(100);
+        let err2 = err1; // Should copy, not move
+
+        // Both should be usable
+        assert_eq!(err1.code(), 100);
+        assert_eq!(err2.code(), 100);
+    }
+
+    #[test]
+    fn test_core_result_alias() {
+        fn test_function() -> CoreResult<i32> {
+            Ok(42)
+        }
+
+        let result = test_function();
+        assert!(result.is_ok());
+        if let Ok(value) = result {
+            assert_eq!(value, 42_i32);
+        }
     }
 }

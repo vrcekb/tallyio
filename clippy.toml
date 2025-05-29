@@ -42,14 +42,12 @@ disallowed-methods = [
     # Panic-inducing methods (TallyIO zero-panic policy)
     "std::option::Option::unwrap",
     "std::result::Result::unwrap",
-    # Note: expect is allowed for Default implementations and documented cases
-    "panic!",
-    "unimplemented!",
-    "todo!",
+    "std::result::Result::expect",
+    "std::panic::panic_any",
 
-    # Potentially unsafe allocations (except when explicitly allowed)
+    # Potentially unsafe allocations
     "std::alloc::alloc",
-    # Note: dealloc is allowed in memory management utilities
+    "std::alloc::dealloc",
 
     # Blocking operations in async context
     "std::thread::sleep",
@@ -59,12 +57,8 @@ disallowed-methods = [
 # Disallowed types for safety
 disallowed-types = [
     # Prefer specific error types over generic ones
-    "Box<dyn std::error::Error>",
-
     # Prefer atomic types over mutex for simple counters
-    "Mutex<u64>",
-    "Mutex<u32>",
-    "Mutex<usize>",
+    "std::sync::Mutex",
 
     # Prefer crossbeam over std channels for performance
     "std::sync::mpsc::Receiver",
@@ -93,9 +87,6 @@ allowed-scripts = ["Latin"]
 
 # Suppress certain lints that may conflict with performance requirements
 suppress-restriction-lint-in-const = true
-
-# Note: Restriction lints are enabled via command line in CI/CD pipeline
-# Use: cargo clippy -- -W clippy::restriction
 
 # ============================================================================
 # 📊 Documentation Requirements
