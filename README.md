@@ -228,6 +228,13 @@ kubectl apply -f deployment/kubernetes/
 ### 📊 Code Coverage Setup
 To enable automatic coverage tracking, configure the `CODECOV_TOKEN` secret in GitHub repository settings. See [docs/codecov-setup.md](docs/codecov-setup.md) for detailed instructions.
 
+### 🔄 Dependency Management
+TallyIO uses Dependabot for automated dependency updates with optimized batching:
+- **Single PR strategy**: All Rust dependencies are batched into one weekly PR
+- **Minimal workflow runs**: `open-pull-requests-limit: 1` prevents multiple concurrent PRs
+- **Smart grouping**: All updates (minor, patch, major) are grouped together
+- **Critical dependency protection**: Major updates for `tokio`, `sqlx`, `ethers`, and `web3` require manual review
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

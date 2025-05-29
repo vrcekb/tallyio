@@ -1,5 +1,5 @@
 # 🔄 TallyIO Automated Dependency Updates
-# Optimized for minimal workflow runs and batch updates
+# Single unified configuration to minimize workflow runs
 
 version: 2
 
@@ -13,8 +13,8 @@ updates:
       time: "09:00"
       timezone: "UTC"
 
-    # 🎯 Batch update strategy
-    open-pull-requests-limit: 3
+    # 🎯 Minimal PRs strategy
+    open-pull-requests-limit: 1
 
     # 🏷️ PR configuration
     commit-message:
@@ -49,24 +49,17 @@ updates:
       - dependency-name: "web3"
         update-types: ["version-update:semver-major"]
 
-    # 📦 Batch all updates together (reduces workflow runs)
+    # 📦 Single group for ALL updates (maximum batching)
     groups:
-      # Batch all dependencies together for fewer PRs
-      all-dependencies:
+      all-updates:
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
-
-      # Separate group for major updates (need manual review)
-      major-updates:
-        patterns:
-          - "*"
-        update-types:
           - "major"
 
-  # 🔧 GitHub Actions (Monthly updates only)
+  # 🔧 GitHub Actions (Quarterly updates only)
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -75,7 +68,7 @@ updates:
       time: "09:00"
       timezone: "UTC"
 
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 1
 
     commit-message:
       prefix: "ci"
@@ -85,3 +78,9 @@ updates:
       - "dependencies"
       - "github-actions"
       - "automated"
+
+    # 📦 Batch all GitHub Actions updates
+    groups:
+      github-actions-updates:
+        patterns:
+          - "*"

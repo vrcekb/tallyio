@@ -18,7 +18,7 @@ pub mod affinity {
     /// # Returns
     /// `Ok(())` if affinity was set successfully
     #[allow(clippy::unnecessary_wraps)] // Platform-specific implementation may need Result
-    pub const fn set_core_affinity(core_id: usize) -> Result<(), crate::CoreError> {
+    pub fn set_core_affinity(core_id: usize) -> Result<(), crate::CoreError> {
         #[cfg(target_os = "linux")]
         {
             use libc::{cpu_set_t, sched_setaffinity, CPU_SET, CPU_ZERO};
