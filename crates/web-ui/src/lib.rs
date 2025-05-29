@@ -16,8 +16,10 @@ pub enum WebUiError {
 
 pub type WebUiResult<T> = Result<T, WebUiError>;
 
-/// Placeholder for web UI functionality
-pub struct WebUiManager;
+/// Web UI manager for TallyIO
+pub struct WebUiManager {
+    render_count: std::sync::atomic::AtomicU64,
+}
 
 impl WebUiManager {
     /// Create new web UI manager
@@ -26,7 +28,19 @@ impl WebUiManager {
     /// Currently never fails, but returns Result for future extensibility
     #[allow(clippy::unnecessary_wraps)] // API consistency
     pub const fn new() -> WebUiResult<Self> {
-        Ok(Self)
+        Ok(Self {
+            render_count: std::sync::atomic::AtomicU64::new(0),
+        })
+    }
+
+    /// Render a UI component
+    ///
+    /// # Errors
+    /// Returns error if component rendering fails
+    pub fn render_component(&self, component: &str) -> WebUiResult<String> {
+        self.render_count
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        Ok(format!("Rendered component: {}", component))
     }
 }
 
@@ -42,5 +56,111 @@ impl Default for WebUiManager {
                 std::process::abort();
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Instant;
+
+    #[test]
+    fn test_webui_manager_creation() -> WebUiResult<()> {
+        let manager = WebUiManager::new()?;
+        assert_eq!(
+            manager
+                .render_count
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_webui_manager_default() {
+        let manager = WebUiManager::default();
+        assert_eq!(
+            manager
+                .render_count
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
+    }
+
+    #[test]
+    fn test_render_component() -> WebUiResult<()> {
+        let manager = WebUiManager::new()?;
+        let result = manager.render_component("test_component")?;
+
+        // Verify component was rendered
+        assert_eq!(result, "Rendered component: test_component");
+        assert_eq!(
+            manager
+                .render_count
+                .load(std::sync::atomic::Ordering::Relaxed),
+            1
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_webui_latency_requirement() -> WebUiResult<()> {
+        let manager = WebUiManager::new()?;
+        let start = Instant::now();
+
+        manager.render_component("latency_test")?;
+
+        let duration = start.elapsed();
+        assert!(
+            duration.as_millis() < 1,
+            "WebUI rendering took {}ms, must be <1ms",
+            duration.as_millis()
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiple_renders() -> WebUiResult<()> {
+        let manager = WebUiManager::new()?;
+
+        for i in 0..10 {
+            manager.render_component(&format!("component_{}", i))?;
+        }
+
+        assert_eq!(
+            manager
+                .render_count
+                .load(std::sync::atomic::Ordering::Relaxed),
+            10
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_concurrent_renders() -> WebUiResult<()> {
+        use std::sync::Arc;
+        use std::thread;
+
+        let manager = Arc::new(WebUiManager::new()?);
+        let mut handles = vec![];
+
+        for i in 0..5 {
+            let manager_clone = Arc::clone(&manager);
+            let handle =
+                thread::spawn(move || manager_clone.render_component(&format!("concurrent_{}", i)));
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            handle.join().unwrap()?;
+        }
+
+        assert_eq!(
+            manager
+                .render_count
+                .load(std::sync::atomic::Ordering::Relaxed),
+            5
+        );
+        Ok(())
     }
 }

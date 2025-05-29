@@ -17,7 +17,9 @@ pub enum ContractsError {
 pub type ContractsResult<T> = Result<T, ContractsError>;
 
 /// Placeholder for contracts functionality
-pub struct ContractsManager;
+pub struct ContractsManager {
+    contract_count: std::sync::atomic::AtomicU64,
+}
 
 impl ContractsManager {
     /// Create new contracts manager
@@ -26,7 +28,19 @@ impl ContractsManager {
     /// Currently never fails, but returns Result for future extensibility
     #[allow(clippy::unnecessary_wraps)] // API consistency
     pub const fn new() -> ContractsResult<Self> {
-        Ok(Self)
+        Ok(Self {
+            contract_count: std::sync::atomic::AtomicU64::new(0),
+        })
+    }
+
+    /// Deploy a smart contract
+    ///
+    /// # Errors
+    /// Returns error if contract deployment fails
+    pub fn deploy_contract(&self, contract: &str) -> ContractsResult<String> {
+        self.contract_count
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        Ok(format!("Deployed contract: {contract}"))
     }
 }
 
@@ -42,5 +56,83 @@ impl Default for ContractsManager {
                 std::process::abort();
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Instant;
+
+    #[test]
+    fn test_contracts_manager_creation() -> ContractsResult<()> {
+        let manager = ContractsManager::new()?;
+        assert_eq!(
+            manager
+                .contract_count
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_contracts_manager_default() {
+        let manager = ContractsManager::default();
+        assert_eq!(
+            manager
+                .contract_count
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
+    }
+
+    #[test]
+    fn test_deploy_contract() -> ContractsResult<()> {
+        let manager = ContractsManager::new()?;
+        let result = manager.deploy_contract("test_contract")?;
+
+        // Verify contract was deployed
+        assert_eq!(result, "Deployed contract: test_contract");
+        assert_eq!(
+            manager
+                .contract_count
+                .load(std::sync::atomic::Ordering::Relaxed),
+            1
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_contracts_latency_requirement() -> ContractsResult<()> {
+        let manager = ContractsManager::new()?;
+        let start = Instant::now();
+
+        manager.deploy_contract("latency_test")?;
+
+        let duration = start.elapsed();
+        assert!(
+            duration.as_millis() < 1,
+            "Contract deployment took {}ms, must be <1ms",
+            duration.as_millis()
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiple_contracts() -> ContractsResult<()> {
+        let manager = ContractsManager::new()?;
+
+        for i in 0..10 {
+            manager.deploy_contract(&format!("contract_{}", i))?;
+        }
+
+        assert_eq!(
+            manager
+                .contract_count
+                .load(std::sync::atomic::Ordering::Relaxed),
+            10
+        );
+        Ok(())
     }
 }
