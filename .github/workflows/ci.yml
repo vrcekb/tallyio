@@ -2,9 +2,9 @@ name: 🚀 TallyIO CI/CD Pipeline
 
 on:
   push:
-    branches: [ master, main, develop ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ master, main, develop ]
+    branches: [ main, develop ]
   schedule:
     # Run nightly at 2 AM UTC for dependency checks
     - cron: '0 2 * * *'
@@ -210,20 +210,22 @@ jobs:
       - name: ✅ All checks passed
         if: ${{ needs.quality.result == 'success' && needs.test.result == 'success' && needs.coverage.result == 'success' && needs.security.result == 'success' && needs.docker.result == 'success' }}
         run: |
-          echo "🎉 All CI checks passed successfully!"
+          echo "🎉 TallyIO CI/CD Pipeline completed successfully!"
           echo "✅ Code quality: PASSED"
           echo "✅ Tests: PASSED"
           echo "✅ Coverage: PASSED"
-          echo "✅ Security: PASSED"
-          echo "✅ Docker: PASSED"
+          echo "✅ Security audit: PASSED"
+          echo "✅ Docker build: PASSED"
+          echo ""
+          echo "🚀 Ready for production deployment!"
 
       - name: ❌ Some checks failed
         if: ${{ needs.quality.result != 'success' || needs.test.result != 'success' || needs.coverage.result != 'success' || needs.security.result != 'success' || needs.docker.result != 'success' }}
         run: |
-          echo "❌ Some CI checks failed:"
+          echo "❌ TallyIO CI/CD Pipeline failed:"
           echo "Code quality: ${{ needs.quality.result }}"
           echo "Tests: ${{ needs.test.result }}"
           echo "Coverage: ${{ needs.coverage.result }}"
-          echo "Security: ${{ needs.security.result }}"
-          echo "Docker: ${{ needs.docker.result }}"
+          echo "Security audit: ${{ needs.security.result }}"
+          echo "Docker build: ${{ needs.docker.result }}"
           exit 1

@@ -214,6 +214,24 @@ kubectl apply -f deployment/kubernetes/
 - [Performance Tuning](docs/performance.md)
 - [Deployment Guide](docs/deployment.md)
 
+## 🚀 CI/CD Pipeline
+
+TallyIO uses a unified GitHub Actions workflow for comprehensive automated testing and deployment:
+
+### 🔄 Single Workflow Strategy
+- **Unified pipeline**: All checks (quality, tests, coverage, security, docker) in one workflow
+- **Minimal runs**: Optimized to prevent multiple concurrent workflow executions
+- **Consistent validation**: Local `scripts/quick-check.ps1` mirrors GitHub Actions CI/CD
+- **Fast feedback**: Run full CI checks locally before pushing
+
+### 🛡️ Quality Gates
+- **Zero panic policy**: Automated detection of `unwrap()`, `expect()`, `panic!()`
+- **Ultra-strict Clippy**: 50+ lint rules for maximum code quality
+- **Security audit**: Integrated vulnerability scanning with cargo-audit
+- **Supply chain security**: Automated dependency verification with cargo-deny
+- **Code coverage**: Minimum 95% overall, 100% for critical modules
+- **Performance tests**: <1ms latency requirement verification
+
 ## 🤝 Contributing
 
 1. Fork the repository

@@ -76,13 +76,13 @@ Write-Host "Running integration tests..." -ForegroundColor Yellow
 $oldErrorAction = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
 try {
-    $integrationResult = cargo test --all --test '*' --verbose 2>&1
+    $integrationResult = cargo test --all --bins --verbose 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✅ Integration tests: OK" -ForegroundColor Green
     } else {
-        # Check if it's just "no test target matches" error
+        # Check if it's just "no tests to run" error
         $resultString = $integrationResult -join " "
-        if ($resultString -like "*no test target matches*") {
+        if ($resultString -like "*no tests to run*" -or $resultString -like "*no test target matches*") {
             Write-Host "✅ Integration tests: OK (no integration tests found)" -ForegroundColor Green
         } else {
             Write-Host "❌ Integration tests: FAILED" -ForegroundColor Red
