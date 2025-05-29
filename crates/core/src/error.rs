@@ -28,12 +28,12 @@ impl CriticalError {
     /// Returns the numeric error code associated with this error.
     /// Used for metrics collection and alerting systems.
     #[must_use]
-    pub const fn code(&self) -> u16 {
+    pub const fn code(self) -> u16 {
         match self {
             Self::Invalid(code)
             | Self::OutOfMemory(code)
             | Self::Timeout(code)
-            | Self::ResourceExhausted(code) => *code,
+            | Self::ResourceExhausted(code) => code,
         }
     }
 
@@ -42,7 +42,7 @@ impl CriticalError {
     /// Returns `true` if the operation can be retried, `false` if it's a permanent failure.
     /// Invalid input errors are not recoverable, while resource errors typically are.
     #[must_use]
-    pub const fn is_recoverable(&self) -> bool {
+    pub const fn is_recoverable(self) -> bool {
         match self {
             Self::Invalid(_) => false,
             Self::OutOfMemory(_) | Self::Timeout(_) | Self::ResourceExhausted(_) => true,

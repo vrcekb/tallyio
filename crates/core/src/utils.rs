@@ -17,6 +17,7 @@ pub mod affinity {
     ///
     /// # Returns
     /// `Ok(())` if affinity was set successfully
+    #[allow(clippy::unnecessary_wraps)] // Platform-specific implementation may need Result
     pub const fn set_core_affinity(core_id: usize) -> Result<(), crate::CoreError> {
         #[cfg(target_os = "linux")]
         {
@@ -234,7 +235,7 @@ pub mod validation {
     /// # Returns
     /// `true` if address appears valid, `false` otherwise
     #[must_use]
-    pub fn is_valid_address(addr: &[u8; 20]) -> bool {
+    pub fn is_valid_address(addr: [u8; 20]) -> bool {
         // Basic validation - not all zeros
         !addr.iter().all(|&b| b == 0)
     }
@@ -313,10 +314,10 @@ mod tests {
     #[test]
     fn test_validation() {
         let addr = [1u8; 20];
-        assert!(validation::is_valid_address(&addr));
+        assert!(validation::is_valid_address(addr));
 
         let zero_addr = [0u8; 20];
-        assert!(!validation::is_valid_address(&zero_addr));
+        assert!(!validation::is_valid_address(zero_addr));
 
         assert!(validation::validate_gas(1000, 21_000).is_ok());
         assert!(validation::validate_gas(0, 21_000).is_err());

@@ -55,6 +55,7 @@ impl TallyEngine {
     ///
     /// # Returns
     /// New `TallyEngine` instance ready for processing
+    #[allow(clippy::unnecessary_wraps)] // API consistency with other constructors
     pub const fn new() -> Result<Self, CoreError> {
         Ok(Self {
             counter: AtomicU64::new(0),
@@ -250,6 +251,7 @@ pub struct MetricsSnapshot {
 impl Default for TallyEngine {
     fn default() -> Self {
         // Use match instead of expect to comply with zero-panic policy
+        #[allow(clippy::option_if_let_else)] // Result, not Option
         match Self::new() {
             Ok(engine) => engine,
             Err(_) => {

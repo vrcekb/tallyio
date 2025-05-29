@@ -33,6 +33,7 @@ impl ApiManager {
     ///
     /// # Errors
     /// Currently never fails, but returns Result for future extensibility
+    #[allow(clippy::unnecessary_wraps)] // API consistency
     pub const fn new() -> ApiResult<Self> {
         Ok(Self)
     }
@@ -41,6 +42,7 @@ impl ApiManager {
 impl Default for ApiManager {
     fn default() -> Self {
         // Use match instead of expect to comply with zero-panic policy
+        #[allow(clippy::option_if_let_else)] // Result, not Option
         match Self::new() {
             Ok(manager) => manager,
             Err(_) => {

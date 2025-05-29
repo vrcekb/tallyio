@@ -80,7 +80,7 @@ impl Price {
     /// # Returns
     /// Price value in wei
     #[must_use]
-    pub const fn value(&self) -> u64 {
+    pub const fn value(self) -> u64 {
         self.0
     }
 
@@ -94,7 +94,7 @@ impl Price {
     /// # Returns
     /// `Some(Price)` if no overflow, `None` otherwise
     #[must_use]
-    pub fn checked_add(&self, other: Self) -> Option<Self> {
+    pub fn checked_add(self, other: Self) -> Option<Self> {
         self.0.checked_add(other.0).map(Self)
     }
 
@@ -108,7 +108,7 @@ impl Price {
     /// # Returns
     /// `Some(Price)` if no overflow, `None` otherwise
     #[must_use]
-    pub fn checked_mul(&self, scalar: u64) -> Option<Self> {
+    pub fn checked_mul(self, scalar: u64) -> Option<Self> {
         self.0.checked_mul(scalar).map(Self)
     }
 }
@@ -146,7 +146,7 @@ impl Gas {
     /// # Returns
     /// Gas amount as u64
     #[must_use]
-    pub const fn value(&self) -> u64 {
+    pub const fn value(self) -> u64 {
         self.0
     }
 }

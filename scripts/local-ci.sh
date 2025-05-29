@@ -156,13 +156,57 @@ else
 fi
 echo ""
 
-# 📎 2. Clippy Linting (Zero warnings policy)
-log_step "Running Clippy (Zero warnings policy)..."
-if cargo clippy --all-targets --all-features -- -D warnings; then
+# 📎 2. Ultra-Strict Clippy Linting (TallyIO Standards)
+log_step "Running Ultra-Strict Clippy (TallyIO Standards)..."
+if cargo clippy --all-targets --all-features -- \
+    -D warnings \
+    -D clippy::pedantic \
+    -D clippy::nursery \
+    -D clippy::correctness \
+    -D clippy::suspicious \
+    -D clippy::perf \
+    -W clippy::redundant_allocation \
+    -W clippy::needless_collect \
+    -W clippy::suboptimal_flops \
+    -A clippy::missing_docs_in_private_items \
+    -D clippy::infinite_loop \
+    -D clippy::while_immutable_condition \
+    -D clippy::never_loop \
+    -D for_loops_over_fallibles \
+    -D clippy::manual_strip \
+    -D clippy::needless_continue \
+    -D clippy::match_same_arms \
+    -D clippy::unwrap_used \
+    -D clippy::expect_used \
+    -D clippy::panic \
+    -D clippy::large_stack_arrays \
+    -D clippy::large_enum_variant \
+    -D clippy::mut_mut \
+    -D clippy::cast_possible_truncation \
+    -D clippy::cast_sign_loss \
+    -D clippy::cast_precision_loss \
+    -D clippy::must_use_candidate \
+    -D clippy::empty_loop \
+    -D clippy::if_same_then_else \
+    -D clippy::await_holding_lock \
+    -D clippy::await_holding_refcell_ref \
+    -D clippy::let_underscore_future \
+    -D clippy::diverging_sub_expression \
+    -D clippy::unreachable \
+    -D clippy::default_numeric_fallback \
+    -D clippy::redundant_pattern_matching \
+    -D clippy::manual_let_else \
+    -D clippy::blocks_in_conditions \
+    -D clippy::needless_pass_by_value \
+    -D clippy::single_match_else \
+    -D clippy::branches_sharing_code \
+    -D clippy::useless_asref \
+    -D clippy::redundant_closure_for_method_calls \
+    -v; then
     results["clippy"]=true
-    log_success "Clippy: PASSED"
+    log_success "Ultra-Strict Clippy: PASSED"
 else
-    log_error "Clippy: FAILED"
+    log_error "Ultra-Strict Clippy: FAILED"
     echo -e "${GRAY}Fix all clippy warnings before proceeding.${NC}"
 fi
 echo ""
@@ -186,15 +230,15 @@ if [ "$FAST_MODE" = true ]; then
     # Jump to summary
     END_TIME=$(date +%s)
     DURATION=$((END_TIME - START_TIME))
-    
+
     echo -e "${CYAN}📋 TallyIO Local CI/CD Summary${NC}"
     echo -e "${CYAN}================================${NC}"
     echo -e "${GRAY}⏱️  Duration: ${DURATION}s${NC}"
     echo ""
-    
+
     PASSED=0
     TOTAL=0
-    
+
     for check in "${!results[@]}"; do
         TOTAL=$((TOTAL + 1))
         if [ "${results[$check]}" = true ]; then
@@ -204,7 +248,7 @@ if [ "$FAST_MODE" = true ]; then
             echo -e "${RED}❌ $check: FAILED${NC}"
         fi
     done
-    
+
     echo ""
     if [ $PASSED -eq $TOTAL ]; then
         echo -e "${GREEN}📊 Results: $PASSED/$TOTAL checks passed${NC}"
@@ -280,7 +324,7 @@ if [ "$SKIP_COVERAGE" = false ]; then
         log_warning "cargo-llvm-cov not found. Installing..."
         cargo install cargo-llvm-cov
     fi
-    
+
     if cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info; then
         results["coverage"]=true
         log_success "Code coverage: PASSED"

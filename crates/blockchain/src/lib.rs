@@ -24,6 +24,7 @@ impl BlockchainManager {
     ///
     /// # Errors
     /// Currently never fails, but returns Result for future extensibility
+    #[allow(clippy::unnecessary_wraps)] // API consistency
     pub const fn new() -> BlockchainResult<Self> {
         Ok(Self)
     }
@@ -32,6 +33,7 @@ impl BlockchainManager {
 impl Default for BlockchainManager {
     fn default() -> Self {
         // Use match instead of expect to comply with zero-panic policy
+        #[allow(clippy::option_if_let_else)] // Result, not Option
         match Self::new() {
             Ok(manager) => manager,
             Err(_) => {
