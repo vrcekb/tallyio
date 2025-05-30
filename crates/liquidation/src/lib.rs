@@ -167,4 +167,14 @@ mod tests {
         );
         Ok(())
     }
+
+    #[test]
+    fn test_liquidation_error_display() {
+        // Test LiquidationError Display implementation (line 54)
+        let core_error =
+            tallyio_core::CoreError::Critical(tallyio_core::CriticalError::Invalid(202));
+        let error = LiquidationError::Core(core_error);
+        let display_str = format!("{error}");
+        assert!(display_str.contains("Core error"));
+    }
 }

@@ -169,4 +169,14 @@ mod tests {
         );
         Ok(())
     }
+
+    #[test]
+    fn test_security_error_display() {
+        // Test SecurityError Display implementation (line 57)
+        let core_error =
+            tallyio_core::CoreError::Critical(tallyio_core::CriticalError::Invalid(404));
+        let error = SecurityError::Core(core_error);
+        let display_str = format!("{error}");
+        assert!(display_str.contains("Core error"));
+    }
 }

@@ -136,4 +136,14 @@ mod tests {
         );
         Ok(())
     }
+
+    #[test]
+    fn test_contracts_error_display() {
+        // Test ContractsError Display implementation (line 57)
+        let core_error =
+            tallyio_core::CoreError::Critical(tallyio_core::CriticalError::Invalid(789));
+        let error = ContractsError::Core(core_error);
+        let display_str = format!("{error}");
+        assert!(display_str.contains("Core error"));
+    }
 }

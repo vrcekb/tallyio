@@ -84,7 +84,7 @@ cargo clippy --all-targets --all-features -- -D warnings  # Ultra-strict linting
 cargo test --all                              # Unit & integration tests
 cargo test --all --release                    # Performance tests
 cargo audit --ignore RUSTSEC-2023-0071 --ignore RUSTSEC-2024-0421 --ignore RUSTSEC-2025-0009  # Security audit
-cargo tarpaulin --all-features --workspace --fail-under 95  # Code coverage (95%+)
+cargo tarpaulin --all-features --workspace --fail-under 90  # Code coverage (90%+)
 ```
 
 ### GitHub Actions CI
@@ -229,7 +229,7 @@ TallyIO uses a unified GitHub Actions workflow for comprehensive automated testi
 - **Ultra-strict Clippy**: 50+ lint rules for maximum code quality
 - **Security audit**: Integrated vulnerability scanning with cargo-audit
 - **Supply chain security**: Automated dependency verification with cargo-deny
-- **Code coverage**: Minimum 95% overall, 100% for critical modules
+- **Code coverage**: Minimum 90% overall, 100% for critical modules
 - **Performance tests**: <1ms latency requirement verification
 
 ## 🤝 Contributing

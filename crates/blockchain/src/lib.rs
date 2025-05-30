@@ -170,4 +170,13 @@ mod tests {
         );
         Ok(())
     }
+
+    #[test]
+    fn test_blockchain_error_display() {
+        // Test BlockchainError Display implementation (line 57)
+        let error = BlockchainError::Network("test network error".to_string());
+        let display_str = format!("{error}");
+        assert!(display_str.contains("Network error"));
+        assert!(display_str.contains("test network error"));
+    }
 }

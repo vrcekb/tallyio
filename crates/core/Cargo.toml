@@ -2,7 +2,12 @@
 name = "tallyio-core"
 version = "0.1.0"
 edition = "2021"
-description = "TallyIO ultra-performant core - <1ms latency"
+description = "TallyIO ultra-performant core - <1ms latency guarantee"
+authors = ["TallyIO Team"]
+license = "MIT"
+repository = "https://github.com/vrcekb/tallyio"
+keywords = ["trading", "mev", "defi", "performance", "finance"]
+categories = ["finance", "algorithms", "concurrency"]
 
 [dependencies]
 # Workspace dependencies
@@ -14,10 +19,33 @@ thiserror = { workspace = true }
 chrono = { workspace = true }
 # jemallocator = { workspace = true }  # Disabled on Windows
 
-# Core-specific
+# Core-specific dependencies
+log = "0.4"
 num-traits = "0.2"
 uuid = { version = "1.6", features = ["v4", "serde"] }
 libc = "0.2"
+core_affinity = "0.8"
+rayon = "1.8"
+dashmap = "5.5"
+ahash = "0.8"
+smallvec = { version = "1.11", features = ["serde"] }
+arrayvec = "0.7"
+once_cell = "1.19"
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.4"
+tokio-test = "0.4"
+
+[[bench]]
+name = "engine_bench"
+harness = false
+
+[[bench]]
+name = "mempool_bench"
+harness = false
+
+[features]
+default = ["simd"]
+simd = []
+debug_assertions = []

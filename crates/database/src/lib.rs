@@ -139,4 +139,14 @@ mod tests {
         );
         Ok(())
     }
+
+    #[test]
+    fn test_database_error_display() {
+        // Test DatabaseError Display implementation (line 60)
+        let core_error =
+            tallyio_core::CoreError::Critical(tallyio_core::CriticalError::Invalid(101));
+        let error = DatabaseError::Core(core_error);
+        let display_str = format!("{error}");
+        assert!(display_str.contains("Core error"));
+    }
 }

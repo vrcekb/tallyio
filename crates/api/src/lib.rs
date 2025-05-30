@@ -170,7 +170,7 @@ mod tests {
                 }
                 Err(_) => {
                     return Err(ApiError::Core(tallyio_core::CoreError::Critical(
-                        tallyio_core::CriticalError::ResourceExhausted(500),
+                        tallyio_core::CriticalError::OutOfMemory(500),
                     )))
                 }
             }
@@ -192,5 +192,15 @@ mod tests {
         let api_error = ApiError::from(ws_error);
 
         assert!(matches!(api_error, ApiError::WebSocket(_)));
+    }
+
+    #[test]
+    fn test_api_error_display() {
+        // Test ApiError Display implementation (line 66)
+        let core_error =
+            tallyio_core::CoreError::Critical(tallyio_core::CriticalError::Invalid(123));
+        let error = ApiError::Core(core_error);
+        let display_str = format!("{error}");
+        assert!(display_str.contains("Core error"));
     }
 }

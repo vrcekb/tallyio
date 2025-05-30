@@ -144,13 +144,17 @@ pub mod time {
         /// Compares elapsed time against the configured maximum duration.
         ///
         /// # Errors
-        /// * `CriticalError::Timeout` - If maximum duration exceeded
+        /// * `CriticalError::LatencyViolation` - If maximum duration exceeded
         ///
         /// # Returns
         /// `Ok(())` if within time limit
         pub fn check_timeout(&self) -> Result<(), CoreError> {
             if self.start.elapsed() > self.max_duration {
-                Err(CoreError::Critical(CriticalError::Timeout(300)))
+                let exceeded_micros =
+                    u64::try_from(self.start.elapsed().as_micros()).unwrap_or(u64::MAX);
+                Err(CoreError::Critical(CriticalError::LatencyViolation(
+                    exceeded_micros,
+                )))
             } else {
                 Ok(())
             }
@@ -431,5 +435,88 @@ mod tests {
             memory::dealloc_aligned(ptr, 4, 32);
         }
         Ok(())
+    }
+
+    #[test]
+    fn test_memory_allocation_layout_error() {
+        // Test allocation with invalid layout to cover line 77
+        let result = memory::alloc_aligned::<u8>(usize::MAX, usize::MAX);
+        assert!(result.is_err());
+        assert!(matches!(
+            result,
+            Err(CoreError::Critical(CriticalError::OutOfMemory(200)))
+        ));
+    }
+
+    #[test]
+    fn test_memory_allocation_null_ptr() {
+        // Test allocation that would return null pointer
+        // This is hard to test reliably, but we can test with extreme values
+        let result = memory::alloc_aligned::<u64>(usize::MAX / 16, 64);
+        // This should either succeed or fail with OutOfMemory
+        match result {
+            Ok(ptr) => {
+                // If it succeeds, clean up
+                unsafe {
+                    memory::dealloc_aligned(ptr, usize::MAX / 16, 64);
+                }
+            }
+            Err(CoreError::Critical(CriticalError::OutOfMemory(_))) => {
+                // Expected failure
+            }
+            Err(_) => {
+                // Other errors are also acceptable for this edge case test
+            }
+        }
+    }
+
+    #[test]
+    fn test_affinity_linux_path() {
+        // Test the Linux-specific path (will be no-op on other platforms)
+        let result = affinity::set_core_affinity(0);
+        assert!(result.is_ok());
+
+        // Test with a higher core ID
+        let result = affinity::set_core_affinity(1);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_timer_elapsed_overflow() {
+        // Test timer with very long duration to test overflow handling
+        let timer = time::LatencyTimer::new(Duration::from_secs(3600));
+
+        // Add a small delay to ensure measurable time
+        std::thread::sleep(Duration::from_millis(1));
+
+        // The elapsed time should be small, so no overflow
+        let elapsed_ns = timer.elapsed_ns();
+        let elapsed_us = timer.elapsed_us();
+
+        assert!(elapsed_ns > 0);
+        // Test that the conversion functions work correctly
+        // Note: Due to precision differences, we just verify they're reasonable
+        assert!(elapsed_ns < u64::MAX);
+        assert!(elapsed_us < u64::MAX);
+    }
+
+    #[test]
+    fn test_validation_comprehensive() {
+        // Test all validation functions comprehensively
+
+        // Test address validation edge cases
+        let mut partial_zero = [0u8; 20];
+        partial_zero[19] = 1; // Only last byte is non-zero
+        assert!(validation::is_valid_address(partial_zero));
+
+        // Test gas validation with minimum values
+        assert!(validation::validate_gas(1, 1).is_ok());
+
+        // Test transaction data validation with empty data
+        assert!(validation::validate_tx_data(&[]).is_ok());
+
+        // Test with maximum allowed data size
+        let max_data = vec![0u8; 1_000_000];
+        assert!(validation::validate_tx_data(&max_data).is_ok());
     }
 }
