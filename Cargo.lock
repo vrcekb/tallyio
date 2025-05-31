@@ -4203,7 +4203,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tallyio-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
  "tokio-tungstenite",
  "tungstenite",
@@ -4223,7 +4223,7 @@ dependencies = [
  "serde_json",
  "sha3",
  "tallyio-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
  "tokio-test",
  "web3",
@@ -4239,7 +4239,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tallyio-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -4264,7 +4264,7 @@ dependencies = [
  "serde",
  "serde_json",
  "smallvec",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio-test",
  "uuid 1.17.0",
 ]
@@ -4277,7 +4277,7 @@ dependencies = [
  "serde",
  "sqlx",
  "tallyio-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
 ]
 
@@ -4288,7 +4288,7 @@ dependencies = [
  "criterion",
  "serde",
  "tallyio-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
  "tokio-test",
 ]
@@ -4301,7 +4301,7 @@ dependencies = [
  "prometheus",
  "serde",
  "tallyio-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tracing",
 ]
 
@@ -4313,7 +4313,7 @@ dependencies = [
  "serde",
  "sha3",
  "tallyio-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -4325,7 +4325,7 @@ dependencies = [
  "serde_json",
  "tallyio-api",
  "tallyio-core",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
 ]
 
