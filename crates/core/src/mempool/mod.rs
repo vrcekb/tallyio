@@ -499,7 +499,7 @@ mod tests {
         assert_eq!(manager.transactions.len(), 1);
 
         // Wait for TTL to expire
-        std::thread::sleep(std::time::Duration::from_millis(2));
+        std::thread::sleep(std::time::Duration::from_millis(10));
 
         // Process another transaction to trigger cleanup
         let mut tx2 = Transaction::new(
@@ -508,14 +508,184 @@ mod tests {
             Price::from_ether(1),
             Price::from_gwei(20),
             Gas::new(150_000),
-            0,
-            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00], // DeFi method
+            1,
+            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00],
         );
-        tx2.set_hash([2u8; 32]); // Set unique hash
-
+        tx2.set_hash([2u8; 32]);
         manager.process_transaction(tx2)?;
-        // First transaction should be cleaned up due to TTL
+
+        // First transaction should be cleaned up
         assert_eq!(manager.transactions.len(), 1);
+        Ok(())
+    }
+
+    #[test]
+    fn test_cleanup_old_transactions_max_size() -> CoreResult<()> {
+        // Test cleanup based on max size (lines 267-268, 272-274, 276, 280, 282-284, 286-287)
+        let mut config = MempoolConfig::default();
+        config.max_transactions = 2; // Very small limit
+        config.filter_config.enable_defi_filter = false; // Disable DeFi filter
+        config.enable_realtime_analysis = false; // Disable analyzer
+        let mut manager = MempoolManager::new(config);
+        manager.start()?;
+
+        // Add 3 transactions to exceed max_transactions
+        for i in 0..3 {
+            let mut tx = Transaction::new(
+                [i; 20],
+                Some([i + 1; 20]),
+                Price::from_ether(1),
+                Price::from_gwei(20),
+                Gas::new(150_000),
+                i as u64,
+                vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00],
+            );
+            let mut hash = [0u8; 32];
+            hash[0] = i;
+            tx.set_hash(hash);
+
+            // Add small delay between transactions to ensure different timestamps
+            if i > 0 {
+                std::thread::sleep(std::time::Duration::from_millis(1));
+            }
+
+            manager.process_transaction(tx)?;
+        }
+
+        // Should only keep max_transactions (2)
+        assert_eq!(manager.transactions.len(), 2);
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_transaction() -> CoreResult<()> {
+        // Test get_transaction method (lines 261-262)
+        let mut manager = MempoolManager::default();
+        manager.start()?;
+
+        let mut tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(1),
+            Price::from_gwei(20),
+            Gas::new(150_000),
+            0,
+            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00],
+        );
+        let hash = [1u8; 32];
+        tx.set_hash(hash);
+
+        manager.process_transaction(tx)?;
+
+        // Test existing transaction
+        let retrieved = manager.get_transaction(&hash);
+        assert!(retrieved.is_some());
+
+        // Test non-existing transaction
+        let non_existing = manager.get_transaction(&[99u8; 32]);
+        assert!(non_existing.is_none());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_get_all_transactions() -> CoreResult<()> {
+        // Test get_all_transactions method (lines 267-268)
+        let mut manager = MempoolManager::default();
+        manager.start()?;
+
+        // Add multiple transactions
+        for i in 0..3 {
+            let mut tx = Transaction::new(
+                [i; 20],
+                Some([i + 1; 20]),
+                Price::from_ether(1),
+                Price::from_gwei(20),
+                Gas::new(150_000),
+                i as u64,
+                vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00],
+            );
+            let mut hash = [0u8; 32];
+            hash[0] = i;
+            tx.set_hash(hash);
+            manager.process_transaction(tx)?;
+        }
+
+        let all_transactions = manager.get_all_transactions();
+        assert_eq!(all_transactions.len(), 3);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_config_getter() -> CoreResult<()> {
+        // Test config getter method (lines 295-296)
+        let config = MempoolConfig {
+            max_transactions: 50_000,
+            transaction_ttl: Duration::from_secs(600),
+            enable_realtime_analysis: false,
+            analysis_batch_size: 200,
+            filter_config: FilterConfig::default(),
+        };
+        let manager = MempoolManager::new(config.clone());
+
+        let retrieved_config = manager.config();
+        assert_eq!(retrieved_config.max_transactions, 50_000);
+        assert_eq!(retrieved_config.transaction_ttl, Duration::from_secs(600));
+        assert!(!retrieved_config.enable_realtime_analysis);
+        assert_eq!(retrieved_config.analysis_batch_size, 200);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_mempool_config_default() {
+        // Test MempoolConfig default implementation (lines 37, 40, 43)
+        let config = MempoolConfig::default();
+        assert_eq!(config.max_transactions, 100_000);
+        assert_eq!(config.transaction_ttl, Duration::from_secs(300));
+        assert!(config.enable_realtime_analysis);
+        assert_eq!(config.analysis_batch_size, 100);
+    }
+
+    #[test]
+    fn test_filter_config_default() {
+        // Test FilterConfig default implementation (lines 64-65, 68, 70)
+        let config = FilterConfig::default();
+        assert_eq!(config.min_gas_price_gwei, 1);
+        assert_eq!(config.max_gas_price_gwei, 1000);
+        assert_eq!(config.min_value_wei, 0);
+        assert!(config.enable_defi_filter);
+        assert!(config.enable_mev_filter);
+    }
+
+    #[test]
+    fn test_manager_without_realtime_analysis() -> CoreResult<()> {
+        // Test manager with realtime analysis disabled (lines 162-163, 166)
+        let mut config = MempoolConfig::default();
+        config.enable_realtime_analysis = false;
+        let mut manager = MempoolManager::new(config);
+        manager.start()?;
+
+        assert!(manager.analyzer.is_none());
+
+        // Process transaction - should work without analyzer
+        let mut tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(1),
+            Price::from_gwei(20),
+            Gas::new(150_000),
+            0,
+            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00],
+        );
+        tx.set_hash([1u8; 32]);
+        manager.process_transaction(tx)?;
+
+        let stats = manager.statistics();
+        assert_eq!(stats.total_transactions, 1);
+        assert_eq!(stats.mev_opportunities, 0); // No analyzer, so no MEV detection
+
         Ok(())
     }
 
@@ -551,84 +721,6 @@ mod tests {
 
         // Should only have 2 transactions (oldest removed)
         assert_eq!(manager.transactions.len(), 2);
-        Ok(())
-    }
-
-    #[test]
-    fn test_get_transaction() -> CoreResult<()> {
-        // Test get_transaction method (lines 291-292)
-        let mut config = MempoolConfig::default();
-        config.filter_config.enable_defi_filter = false; // Disable DeFi filter
-        let mut manager = MempoolManager::new(config);
-        manager.start()?;
-
-        let mut tx = Transaction::new(
-            [1u8; 20],
-            Some([2u8; 20]),
-            Price::from_ether(1),
-            Price::from_gwei(20),
-            Gas::new(150_000),
-            0,
-            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00], // DeFi method
-        );
-        let hash = [1u8; 32];
-        tx.set_hash(hash);
-
-        manager.process_transaction(tx.clone())?;
-
-        // Test existing transaction
-        let retrieved = manager.get_transaction(&hash);
-        assert!(retrieved.is_some());
-        if let Some(retrieved_tx) = retrieved {
-            assert_eq!(retrieved_tx.from, tx.from);
-        }
-
-        // Test non-existing transaction
-        let non_existing = manager.get_transaction(&[99u8; 32]);
-        assert!(non_existing.is_none());
-        Ok(())
-    }
-
-    #[test]
-    fn test_get_all_transactions() -> CoreResult<()> {
-        // Test get_all_transactions method
-        let mut config = MempoolConfig::default();
-        config.filter_config.enable_defi_filter = false; // Disable DeFi filter
-        config.enable_realtime_analysis = false; // Disable analyzer to avoid latency violations
-        let mut manager = MempoolManager::new(config);
-        manager.start()?;
-
-        // Add multiple transactions
-        for i in 0..3 {
-            let mut tx = Transaction::new(
-                [i; 20],
-                Some([i + 1; 20]),
-                Price::from_ether(1),
-                Price::from_gwei(20),
-                Gas::new(150_000),
-                i as u64,
-                vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00], // DeFi method
-            );
-            let mut hash = [0u8; 32];
-            hash[0] = i;
-            tx.set_hash(hash);
-            manager.process_transaction(tx)?;
-        }
-
-        let all_transactions = manager.get_all_transactions();
-        assert_eq!(all_transactions.len(), 3);
-        Ok(())
-    }
-
-    #[test]
-    fn test_config_getter() -> CoreResult<()> {
-        // Test config getter method
-        let config = MempoolConfig::default();
-        let manager = MempoolManager::new(config.clone());
-
-        let retrieved_config = manager.config();
-        assert_eq!(retrieved_config.max_transactions, config.max_transactions);
-        assert_eq!(retrieved_config.transaction_ttl, config.transaction_ttl);
         Ok(())
     }
 }

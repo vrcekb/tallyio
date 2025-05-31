@@ -707,4 +707,64 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_stack_error_paths() -> CoreResult<()> {
+        let stack = LockFreeStack::new();
+
+        // Test push operation
+        stack.push(42)?;
+        assert_eq!(stack.len(), 1);
+        assert!(!stack.is_empty());
+
+        // Test pop operation
+        assert_eq!(stack.pop(), Some(42));
+        assert_eq!(stack.len(), 0);
+        assert!(stack.is_empty());
+
+        // Test pop from empty stack
+        assert_eq!(stack.pop(), None);
+
+        // Test multiple operations
+        for i in 0..10 {
+            stack.push(i)?;
+        }
+
+        let stats = stack.statistics();
+        assert_eq!(stats.total_pushes, 11); // 1 + 10
+        assert_eq!(stats.total_pops, 1);
+        assert_eq!(stats.current_size, 10);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_hashmap_error_paths() -> CoreResult<()> {
+        let map = LockFreeHashMap::new(4);
+
+        // Test insert operations
+        map.insert("key1".to_string(), 100)?;
+        map.insert("key2".to_string(), 200)?;
+        assert_eq!(map.len(), 2);
+        assert!(!map.is_empty());
+
+        // Test get operations
+        assert_eq!(map.get(&"key1".to_string()), Some(100));
+        assert_eq!(map.get(&"key2".to_string()), Some(200));
+        assert_eq!(map.get(&"nonexistent".to_string()), None);
+
+        // Test bucket collision (force items into same bucket)
+        let small_map = LockFreeHashMap::new(1); // Only 1 bucket
+        small_map.insert("a".to_string(), 1)?;
+        small_map.insert("b".to_string(), 2)?;
+        small_map.insert("c".to_string(), 3)?;
+
+        // All should be retrievable despite collisions
+        assert_eq!(small_map.get(&"a".to_string()), Some(1));
+        assert_eq!(small_map.get(&"b".to_string()), Some(2));
+        assert_eq!(small_map.get(&"c".to_string()), Some(3));
+        assert_eq!(small_map.len(), 3);
+
+        Ok(())
+    }
 }

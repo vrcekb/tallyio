@@ -390,4 +390,87 @@ mod tests {
         let result = CoreConfigBuilder::new().worker_threads(0).build();
         assert!(result.is_err());
     }
+
+    #[test]
+    fn test_config_builder_creation() -> CoreResult<()> {
+        // Test builder() method (lines 58-59)
+        let config = CoreConfig::builder().worker_threads(2).build()?;
+        assert_eq!(config.worker_threads, 2);
+        Ok(())
+    }
+
+    #[test]
+    fn test_config_optimal_cpu_affinity() {
+        // Test optimal() method CPU affinity logic (line 108)
+        let config = CoreConfig::optimal();
+        let cpu_count = num_cpus::get();
+        assert_eq!(config.enable_cpu_affinity, cpu_count <= 32);
+    }
+
+    #[test]
+    fn test_config_optimal_values() {
+        // Test optimal() method specific values (lines 107, 109-116)
+        let config = CoreConfig::optimal();
+        let cpu_count = num_cpus::get();
+
+        assert_eq!(config.worker_threads, cpu_count.min(16));
+        assert_eq!(config.memory_pool_size, 128 * 1024 * 1024);
+        assert_eq!(config.max_queue_size, 200_000);
+        assert_eq!(config.latency_warning_threshold_us, 250);
+        assert_eq!(config.latency_critical_threshold_us, 500);
+        assert!(config.enable_simd);
+        assert_eq!(config.batch_size, 200);
+        assert_eq!(config.scheduler_tick_interval, Duration::from_micros(50));
+        assert_eq!(config.worker_stack_size, 4 * 1024 * 1024);
+    }
+
+    #[test]
+    fn test_config_minimal_values() {
+        // Test minimal() method specific values (lines 124-133)
+        let config = CoreConfig::minimal();
+
+        assert_eq!(config.worker_threads, 1);
+        assert!(!config.enable_cpu_affinity);
+        assert_eq!(config.memory_pool_size, 1024 * 1024);
+        assert_eq!(config.max_queue_size, 1000);
+        assert_eq!(config.latency_warning_threshold_us, 1000);
+        assert_eq!(config.latency_critical_threshold_us, 2000);
+        assert!(!config.enable_simd);
+        assert_eq!(config.batch_size, 10);
+        assert_eq!(config.scheduler_tick_interval, Duration::from_millis(1));
+        assert_eq!(config.worker_stack_size, 512 * 1024);
+    }
+
+    #[test]
+    fn test_config_builder_new() {
+        // Test CoreConfigBuilder::new() method (lines 147-149)
+        let builder = CoreConfigBuilder::new();
+        let config = builder.config;
+
+        // Should have default values
+        assert!(config.worker_threads > 0);
+        assert_eq!(config.memory_pool_size, 64 * 1024 * 1024);
+    }
+
+    #[test]
+    fn test_config_validation_edge_cases() {
+        // Test additional validation edge cases
+        let mut config = CoreConfig::default();
+
+        // Test exactly 64 worker threads (should be valid)
+        config.worker_threads = 64;
+        assert!(config.validate().is_ok());
+
+        // Test exactly 1MB memory pool (should be valid)
+        config.memory_pool_size = 1024 * 1024;
+        assert!(config.validate().is_ok());
+
+        // Test exactly 1000 max queue size (should be valid)
+        config.max_queue_size = 1000;
+        assert!(config.validate().is_ok());
+
+        // Test exactly 512KB worker stack size (should be valid)
+        config.worker_stack_size = 512 * 1024;
+        assert!(config.validate().is_ok());
+    }
 }

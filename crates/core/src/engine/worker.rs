@@ -498,6 +498,217 @@ mod tests {
         let stats = pool.statistics();
         assert_eq!(stats.worker_count, 2);
         assert_eq!(stats.active_workers, 2);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_worker_status_default() {
+        // Test WorkerStatus::default() (lines 29-30)
+        let status = WorkerStatus::default();
+        assert_eq!(status, WorkerStatus::Idle);
+    }
+
+    #[test]
+    fn test_worker_config_new() {
+        // Test WorkerConfig::new() (lines 50-56)
+        let config = WorkerConfig::new(42);
+        assert_eq!(config.id, 42);
+        assert_eq!(config.cpu_core, None);
+        assert_eq!(config.stack_size, 2 * 1024 * 1024);
+        assert!(!config.enable_cpu_affinity);
+    }
+
+    #[test]
+    fn test_worker_config_with_cpu_core() {
+        // Test WorkerConfig::with_cpu_core() (lines 61-64)
+        let config = WorkerConfig::new(0).with_cpu_core(3);
+        assert_eq!(config.cpu_core, Some(3));
+        assert!(config.enable_cpu_affinity);
+    }
+
+    #[test]
+    fn test_worker_config_with_stack_size() {
+        // Test WorkerConfig::with_stack_size() (lines 69-71)
+        let config = WorkerConfig::new(0).with_stack_size(4 * 1024 * 1024);
+        assert_eq!(config.stack_size, 4 * 1024 * 1024);
+    }
+
+    #[test]
+    fn test_worker_start_already_running() -> CoreResult<()> {
+        // Test starting worker that's already running (lines 115-116)
+        let config = WorkerConfig::new(0);
+        let mut worker = Worker::new(config);
+
+        worker.start()?;
+        assert!(worker.is_running());
+
+        // Starting again should return Ok without error
+        worker.start()?;
+        assert!(worker.is_running());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_worker_process_transaction_not_running() -> CoreResult<()> {
+        // Test processing transaction when worker is not running (lines 135-136)
+        let config = WorkerConfig::new(0);
+        let worker = Worker::new(config);
+
+        let tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(1),
+            Price::from_gwei(20),
+            Gas::new(21_000),
+            0,
+            Vec::with_capacity(0),
+        );
+
+        let result = worker.process_transaction(tx);
+        assert!(result.is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_worker_record_error() {
+        // Test Worker::record_error() (lines 206-207)
+        let config = WorkerConfig::new(0);
+        let worker = Worker::new(config);
+
+        let initial_stats = worker.statistics();
+        assert_eq!(initial_stats.error_count, 0);
+
+        worker.record_error();
+        worker.record_error();
+
+        let stats = worker.statistics();
+        assert_eq!(stats.error_count, 2);
+    }
+
+    #[test]
+    fn test_worker_statistics_zero_tasks() {
+        // Test statistics calculation with zero tasks (lines 182)
+        let config = WorkerConfig::new(42);
+        let worker = Worker::new(config);
+
+        let stats = worker.statistics();
+        assert_eq!(stats.id, 42);
+        assert_eq!(stats.status, WorkerStatus::Idle);
+        assert_eq!(stats.tasks_processed, 0);
+        assert_eq!(stats.average_processing_time_ns, 0); // Should handle division by zero
+        assert_eq!(stats.error_count, 0);
+    }
+
+    #[test]
+    fn test_worker_pool_config_default() {
+        // Test WorkerPoolConfig::default() (lines 251-256)
+        let config = WorkerPoolConfig::default();
+        assert!(config.worker_count > 0);
+        assert!(config.worker_count <= 16);
+        assert!(config.enable_cpu_affinity);
+        assert_eq!(config.worker_stack_size, 2 * 1024 * 1024);
+    }
+
+    #[test]
+    fn test_worker_pool_new_with_cpu_affinity() {
+        // Test WorkerPool::new() with CPU affinity (lines 268-269)
+        let config = WorkerPoolConfig {
+            worker_count: 4,
+            enable_cpu_affinity: true,
+            worker_stack_size: 1024 * 1024,
+        };
+
+        let pool = WorkerPool::new(config);
+        assert_eq!(pool.worker_count(), 4);
+
+        // Check that workers have CPU cores assigned
+        for i in 0..4 {
+            if let Some(worker) = pool.get_worker(i) {
+                assert!(worker.config.cpu_core.is_some());
+                assert!(worker.config.enable_cpu_affinity);
+            }
+        }
+    }
+
+    #[test]
+    fn test_worker_pool_new_without_cpu_affinity() {
+        // Test WorkerPool::new() without CPU affinity (lines 270-271)
+        let config = WorkerPoolConfig {
+            worker_count: 2,
+            enable_cpu_affinity: false,
+            worker_stack_size: 1024 * 1024,
+        };
+
+        let pool = WorkerPool::new(config);
+
+        // Check that workers don't have CPU cores assigned
+        for i in 0..2 {
+            if let Some(worker) = pool.get_worker(i) {
+                assert_eq!(worker.config.cpu_core, None);
+                assert!(!worker.config.enable_cpu_affinity);
+            }
+        }
+    }
+
+    #[test]
+    fn test_worker_pool_get_worker() {
+        // Test WorkerPool::get_worker() (lines 320-321)
+        let config = WorkerPoolConfig {
+            worker_count: 3,
+            enable_cpu_affinity: false,
+            worker_stack_size: 1024 * 1024,
+        };
+        let pool = WorkerPool::new(config);
+
+        // Valid worker IDs
+        assert!(pool.get_worker(0).is_some());
+        assert!(pool.get_worker(1).is_some());
+        assert!(pool.get_worker(2).is_some());
+
+        // Invalid worker ID
+        assert!(pool.get_worker(3).is_none());
+        assert!(pool.get_worker(100).is_none());
+    }
+
+    #[test]
+    fn test_worker_pool_get_worker_mut() -> CoreResult<()> {
+        // Test WorkerPool::get_worker_mut() (lines 325-326)
+        let config = WorkerPoolConfig {
+            worker_count: 2,
+            enable_cpu_affinity: false,
+            worker_stack_size: 1024 * 1024,
+        };
+        let mut pool = WorkerPool::new(config);
+
+        // Valid worker ID
+        if let Some(worker) = pool.get_worker_mut(0) {
+            worker.start()?;
+            assert!(worker.is_running());
+        }
+
+        // Invalid worker ID
+        assert!(pool.get_worker_mut(2).is_none());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_worker_pool_statistics_comprehensive() -> CoreResult<()> {
+        // Test comprehensive worker pool statistics
+        let config = WorkerPoolConfig {
+            worker_count: 2,
+            enable_cpu_affinity: false,
+            worker_stack_size: 1024 * 1024,
+        };
+        let mut pool = WorkerPool::new(config);
+        pool.start()?;
+
+        let stats = pool.statistics();
+        assert_eq!(stats.worker_count, 2);
+        assert_eq!(stats.active_workers, 2);
         assert_eq!(stats.total_tasks_processed, 0);
         assert_eq!(stats.error_rate(), 0.0);
 
@@ -517,34 +728,24 @@ mod tests {
     }
 
     #[test]
-    fn test_worker_status_default() {
-        // Test Default implementation for WorkerStatus (lines 27-28)
-        let default_status = WorkerStatus::default();
-        assert_eq!(default_status, WorkerStatus::Idle);
+    fn test_num_cpus_get() {
+        // Test num_cpus::get() function (lines 400-403)
+        let cpu_count = num_cpus::get();
+        assert!(cpu_count > 0);
+        assert!(cpu_count >= 1);
     }
 
     #[test]
-    fn test_worker_start_already_running() -> CoreResult<()> {
-        // Test starting worker when already running (line 114)
+    fn test_worker_update_last_activity() -> CoreResult<()> {
+        // Test update_last_activity method (lines 196-201)
         let config = WorkerConfig::new(0);
         let mut worker = Worker::new(config);
-
         worker.start()?;
-        assert!(worker.is_running());
 
-        // Start again - should be OK
-        worker.start()?;
-        assert!(worker.is_running());
+        let initial_stats = worker.statistics();
+        let initial_timestamp = initial_stats.last_activity_timestamp;
 
-        Ok(())
-    }
-
-    #[test]
-    fn test_worker_process_transaction_not_running() -> CoreResult<()> {
-        // Test processing transaction when worker is not running (line 134)
-        let config = WorkerConfig::new(0);
-        let worker = Worker::new(config); // Not started
-
+        // Process a transaction to trigger update_last_activity
         let tx = Transaction::new(
             [1u8; 20],
             Some([2u8; 20]),
@@ -555,67 +756,106 @@ mod tests {
             Vec::with_capacity(0),
         );
 
-        let result = worker.process_transaction(tx);
-        assert!(result.is_err());
+        worker.process_transaction(tx)?;
+
+        let final_stats = worker.statistics();
+        let final_timestamp = final_stats.last_activity_timestamp;
+
+        // Timestamp should have been updated
+        assert!(final_timestamp >= initial_timestamp);
 
         Ok(())
     }
 
     #[test]
-    fn test_worker_record_error() -> CoreResult<()> {
-        // Test record_error method (lines 204-205)
-        let config = WorkerConfig::new(0);
+    fn test_worker_statistics_with_tasks() -> CoreResult<()> {
+        // Test statistics calculation with tasks (lines 180-191)
+        let config = WorkerConfig::new(42);
         let mut worker = Worker::new(config);
         worker.start()?;
 
-        // Initially no errors
+        // Process multiple transactions
+        for _ in 0..3 {
+            let tx = Transaction::new(
+                [1u8; 20],
+                Some([2u8; 20]),
+                Price::from_ether(1),
+                Price::from_gwei(20),
+                Gas::new(21_000),
+                0,
+                Vec::with_capacity(0),
+            );
+            worker.process_transaction(tx)?;
+        }
+
         let stats = worker.statistics();
+        assert_eq!(stats.id, 42);
+        assert_eq!(stats.status, WorkerStatus::Idle);
+        assert_eq!(stats.tasks_processed, 3);
+        assert!(stats.average_processing_time_ns > 0); // Should have some processing time
         assert_eq!(stats.error_count, 0);
-
-        // Record an error
-        worker.record_error();
-
-        let stats = worker.statistics();
-        assert_eq!(stats.error_count, 1);
 
         Ok(())
     }
 
     #[test]
-    fn test_worker_pool_get_worker() {
-        // Test get_worker and get_worker_mut methods (lines 318-319, 323-324)
+    fn test_worker_pool_statistics_with_tasks() -> CoreResult<()> {
+        // Test WorkerPoolStatistics methods (lines 372-394)
         let config = WorkerPoolConfig {
-            worker_count: 3,
+            worker_count: 2,
             enable_cpu_affinity: false,
             worker_stack_size: 1024 * 1024,
         };
         let mut pool = WorkerPool::new(config);
+        pool.start()?;
 
-        // Test get_worker
-        let worker = pool.get_worker(0);
-        assert!(worker.is_some());
-        if let Some(w) = worker {
-            assert_eq!(w.id(), 0);
+        // Process transactions on different workers
+        let tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(1),
+            Price::from_gwei(20),
+            Gas::new(21_000),
+            0,
+            Vec::with_capacity(0),
+        );
+
+        if let Some(worker) = pool.get_worker(0) {
+            worker.process_transaction(tx.clone())?;
+            worker.record_error(); // Add an error
         }
 
-        let worker = pool.get_worker(2);
-        assert!(worker.is_some());
-        if let Some(w) = worker {
-            assert_eq!(w.id(), 2);
+        if let Some(worker) = pool.get_worker(1) {
+            worker.process_transaction(tx)?;
+            // No error for this worker
         }
 
-        let worker = pool.get_worker(5); // Out of bounds
-        assert!(worker.is_none());
+        let stats = pool.statistics();
+        assert_eq!(stats.total_tasks_processed, 2);
+        assert_eq!(stats.total_errors, 1);
+        assert_eq!(stats.error_rate(), 0.5); // 1 error out of 2 tasks
+                                             // Just verify that average processing time is calculated
+        let _avg_time = stats.average_processing_time_ns();
 
-        // Test get_worker_mut
-        let worker_mut = pool.get_worker_mut(1);
-        assert!(worker_mut.is_some());
-        if let Some(w) = worker_mut {
-            assert_eq!(w.id(), 1);
-        }
+        Ok(())
+    }
 
-        let worker_mut = pool.get_worker_mut(10); // Out of bounds
-        assert!(worker_mut.is_none());
+    #[test]
+    fn test_worker_pool_statistics_empty() {
+        // Test WorkerPoolStatistics with empty workers (lines 383-384)
+        let config = WorkerPoolConfig {
+            worker_count: 0, // No workers
+            enable_cpu_affinity: false,
+            worker_stack_size: 1024 * 1024,
+        };
+        let pool = WorkerPool::new(config);
+
+        let stats = pool.statistics();
+        assert_eq!(stats.worker_count, 0);
+        assert_eq!(stats.total_tasks_processed, 0);
+        assert_eq!(stats.total_errors, 0);
+        assert_eq!(stats.error_rate(), 0.0);
+        assert_eq!(stats.average_processing_time_ns(), 0); // Should handle empty case
     }
 
     #[test]

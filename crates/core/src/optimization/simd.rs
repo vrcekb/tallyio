@@ -759,4 +759,41 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_simd_fallback_paths() -> CoreResult<()> {
+        // Test fallback paths - these will be tested through normal operation
+        // since the SIMD implementation falls back to scalar operations
+        let simd = SimdOps::new();
+
+        let a = vec![1.0, 2.0, 3.0];
+        let b = vec![4.0, 5.0, 6.0];
+        let mut result = vec![0.0; 3];
+
+        // Test add operation (covers fallback paths)
+        simd.add_f64_arrays(&a, &b, &mut result)?;
+        assert_eq!(result, vec![5.0, 7.0, 9.0]);
+
+        // Test mul operation (covers fallback paths)
+        simd.mul_f64_arrays(&a, &b, &mut result)?;
+        assert_eq!(result, vec![4.0, 10.0, 18.0]);
+
+        // Test dot product (covers fallback paths)
+        let dot = simd.dot_product_f64(&a, &b)?;
+        assert_eq!(dot, 32.0);
+
+        // Test max (covers fallback paths)
+        let max_val = simd.max_f64(&a)?;
+        assert_eq!(max_val, 3.0);
+
+        // Test min (covers fallback paths)
+        let min_val = simd.min_f64(&a)?;
+        assert_eq!(min_val, 1.0);
+
+        // Test sum (covers fallback paths)
+        let sum_val = simd.sum_f64(&a)?;
+        assert_eq!(sum_val, 6.0);
+
+        Ok(())
+    }
 }

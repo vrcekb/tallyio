@@ -1,271 +1,693 @@
 # TallyIO - Ultra-Performant Financial Trading Platform
 
-🚀 **Production-ready Rust workspace for high-frequency trading and MEV extraction**
+Preveri ali je koda commit ready: "E:\ZETA\Tallyio\scripts\quick-check.py"
 
-## 🏗️ Architecture
+TallyIO - Comprehensive Development Guide
 
-```
-TallyIO/
-├── crates/                     # 🦀 Rust crates
-│   ├── core/                   # ⚡ Ultra-performant core (<1ms latency)
-│   ├── blockchain/             # 🔗 Multi-chain integration
-│   ├── liquidation/            # 🎯 Liquidation strategies
-│   ├── security/               # 🔒 Security modules
-│   ├── database/               # 💾 Database abstractions
-│   ├── metrics/                # 📊 Metrics & monitoring
-│   ├── api/                    # 🌐 REST + WebSocket API
-│   ├── contracts/              # 📜 Smart contracts
-│   └── web-ui/                 # 🖥️ React frontend
-├── smart-contracts/            # 📄 Solidity contracts
-├── config/                     # ⚙️ Configuration files
-├── migrations/                 # 🗃️ Database migrations
-├── monitoring/                 # 📈 Grafana dashboards
-└── deployment/                 # 🚀 Docker + K8s config
-```
+🎯 Project Overview
+TallyIO is an ultra-high-performance autonomous platform for MEV (Maximal Extractable Value) extraction and liquidation opportunities across multiple blockchain networks. The system is designed with sub-millisecond latency as the primary goal while maintaining absolute security and reliability.
+Core Principles
 
-## ⚡ Core Features
+Performance First: Every decision prioritizes sub-1ms latency
+Zero Panics: The system MUST NEVER panic in production
+Full Autonomy: Operates without human intervention
+Dynamic Configuration: Complete UI control without code changes
+Multi-Chain Native: First-class support for all major chains
 
-### 🎯 Ultra-Low Latency
-- **<1ms processing guarantee** for critical operations
-- **Zero-panic architecture** - All errors handled with `Result<T, E>`
-- **Cache-optimized memory layout** with `#[repr(C, align(64))]`
-- **Lock-free data structures** using `crossbeam::queue::SegQueue`
+🏗️ System Architecture
+┌──────────────────────────────────────────────────────────────┐
+│                    UI Dashboard (React)                       │
+│                 Full System Control & Monitoring              │
+└────────────────────────┬─────────────────────────────────────┘
+                         │ WebSocket + GraphQL
+┌────────────────────────┴─────────────────────────────────────┐
+│                      Control Plane                            │
+│         Orchestration, Config Management, Hot-Reload          │
+├──────────────────────────────────────────────────────────────┤
+│  Runtime Engine  │  Code Generation  │  Template Engine      │
+├──────────────────────────────────────────────────────────────┤
+│                   Application Layer                           │
+├─────────┬──────────┬───────────┬──────────┬─────────────────┤
+│Strategy │Simulator │   Risk    │ Metrics  │  ML Engine      │
+│Manager  │  (EVM)   │ Manager   │Collector │ (Prediction)     │
+├─────────┴──────────┴───────────┴──────────┴─────────────────┤
+│                  Blockchain Abstraction                       │
+├─────────┬──────────┬───────────┬──────────┬─────────────────┤
+│Ethereum │ Polygon  │ Arbitrum  │ Optimism │    Solana       │
+│  +L2s   │          │           │   Base    │                 │
+└─────────┴──────────┴───────────┴──────────┴─────────────────┘
+                         │
+┌──────────────────────────────────────────────────────────────┐
+│                 Infrastructure Layer                          │
+├─────────┬──────────┬───────────┬──────────┬─────────────────┤
+│  Core   │ Network  │  Wallet   │ Storage  │Secure Storage   │
+│ (<1ms)  │(WS/HTTP) │ (Signing) │(Postgres)│ (Encrypted)     │
+└─────────┴──────────┴───────────┴──────────┴─────────────────┘
+📋 Development Requirements
+Absolute Rules (NEVER VIOLATE)
+rust// ❌ ABSOLUTELY FORBIDDEN - WILL CAUSE IMMEDIATE REJECTION
+.unwrap()           // NEVER use
+.expect()           // NEVER use  
+panic!()            // NEVER use
+.unwrap_or_default() // NEVER use
+todo!()             // NEVER use
+unimplemented!()    // NEVER use
 
-### 🔥 Performance Optimizations
-- **Memory-aligned structs** for cache efficiency
-- **Atomic counters** for metrics without locks
-- **Pre-allocated buffers** with `Vec::with_capacity()`
-- **Fast hashing** for hot paths
-
-### 🛡️ Production-Ready
-- **Comprehensive error handling** with `thiserror`
-- **Type safety** with zero-cost abstractions
-- **Extensive testing** with latency assertions
-- **Monitoring integration** with Prometheus metrics
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Rust 1.75+ (nightly recommended)
-- PostgreSQL 15+
-- Redis 7+
-
-### Build & Test
-```bash
-# Clone repository
-git clone https://github.com/your-org/tallyio
-cd tallyio
-
-# Build all crates
-cargo build --release
-
-# Run tests
-cargo test --all
-
-# Check code quality
-cargo clippy --all-targets -- -D warnings
-
-# Run quick checks (recommended before every commit)
-.\scripts\quick-check.ps1
-```
-
-## 🔄 Local Development & CI/CD Consistency
-
-TallyIO ensures **identical validation** between local development and CI/CD:
-
-### Local Quick Check
-```powershell
-# Run all checks locally (mirrors CI exactly)
-.\scripts\quick-check.ps1
-
-# Individual checks available:
-cargo fmt --all -- --check                    # Code formatting
-cargo clippy --all-targets --all-features -- -D warnings  # Ultra-strict linting
-cargo test --all                              # Unit & integration tests
-cargo test --all --release                    # Performance tests
-cargo audit --ignore RUSTSEC-2023-0071 --ignore RUSTSEC-2024-0421 --ignore RUSTSEC-2025-0009  # Security audit
-cargo tarpaulin --all-features --workspace --fail-under 90  # Code coverage (90%+)
-```
-
-### GitHub Actions CI
-- **`.github/workflows/ci.yml`** - Main CI pipeline (mirrors quick-check.ps1)
-- **`.github/workflows/security.yml`** - Extended security checks
-- **`.github/workflows/release.yml`** - Release automation
-
-### Security Vulnerabilities (Temporarily Ignored)
-Current known issues waiting for upstream fixes:
-- **RUSTSEC-2023-0071**: RSA Marvin Attack (no fix available)
-- **RUSTSEC-2024-0421**: idna vulnerability (waiting for web3 update)
-- **RUSTSEC-2025-0009**: ring AES panic (waiting for ethers update)
-- **RUSTSEC-2025-0010**: ring unmaintained (now maintained by rustls)
-- **RUSTSEC-2024-0384**: instant unmaintained (used by ethers)
-
-✅ **All checks pass identically in both local and CI environments**
-
-## 📊 Performance Benchmarks
-
-| Operation | Latency | Throughput |
-|-----------|---------|------------|
-| Transaction Processing | <1ms | 100K+ TPS |
-| MEV Opportunity Scan | <100μs | 1M+ ops/sec |
-| Price Updates | <50μs | 2M+ ops/sec |
-
-## 🔧 Core Crate API
-
-### Transaction Processing
-```rust
-use tallyio_core::{TallyEngine, Transaction, Price, Gas};
-
-// Create engine
-let engine = TallyEngine::new()?;
-
-// Submit transaction
-let tx = Transaction::new(
-    from_addr,
-    Some(to_addr),
-    Price::new(1_000_000_000_000_000_000), // 1 ETH
-    Price::new(20_000_000_000),            // 20 gwei
-    Gas::new(21_000),
-    0,
-    vec![]
-);
-
-engine.submit_transaction(tx)?;
-
-// Process with <1ms guarantee
-if let Some(result) = engine.process_next()? {
-    println!("Processed in {}ns", result.processing_time_ns);
+// ✅ ALWAYS USE PROPER ERROR HANDLING
+fn operation() -> Result<Value, Error> {
+    risky_operation()?  // Use ? operator
 }
-```
+Performance Requirements
 
-### MEV Opportunity Detection
-```rust
-// Automatic MEV scanning for DeFi transactions
-if tx.is_defi_related() {
-    if let Some(opportunity) = scan_mev_opportunity(&tx)? {
-        println!("Found MEV opportunity: {} wei", opportunity.value());
+Critical Path Latency: < 1ms (MANDATORY)
+Transaction Simulation: < 10ms
+Strategy Evaluation: < 5ms
+Risk Validation: < 0.5ms
+Memory Allocation: ZERO in hot paths
+
+Security Requirements
+
+Private Keys: NEVER in plain text, ALWAYS encrypted
+API Keys: Store in secure_storage module only
+Audit Logging: Log ALL sensitive operations
+Access Control: Implement RBAC for all endpoints
+Input Validation: Validate ALL external inputs
+
+🔧 Module Implementation Guide
+Core Module Structure
+Every module MUST follow this structure:
+rust//! Module description
+
+use std::sync::Arc;
+use dashmap::DashMap;
+use crate::error::{Error, Result};
+
+/// Module errors using thiserror
+#[derive(thiserror::Error, Debug)]
+pub enum ModuleError {
+    #[error("Operation failed: {0}")]
+    OperationFailed(String),
+    
+    #[error("Invalid input: {0}")]
+    InvalidInput(String),
+}
+
+/// Main module struct
+pub struct ModuleName {
+    // Use Arc for shared ownership
+    config: Arc<Config>,
+    // Use DashMap for concurrent access
+    cache: DashMap<Key, Value>,
+    // Use atomics for counters
+    counter: AtomicU64,
+}
+
+impl ModuleName {
+    /// Creates new instance
+    /// 
+    /// # Errors
+    /// Returns error if initialization fails
+    pub fn new(config: Config) -> Result<Self> {
+        // Validate config
+        config.validate()?;
+        
+        Ok(Self {
+            config: Arc::new(config),
+            cache: DashMap::new(),
+            counter: AtomicU64::new(0),
+        })
+    }
+    
+    /// Critical path function - MUST be < 1ms
+    #[inline(always)]
+    pub fn critical_operation(&self, input: &Input) -> Result<Output> {
+        // Validate input
+        if !input.is_valid() {
+            return Err(Error::InvalidInput("Invalid input".into()));
+        }
+        
+        // Perform operation with NO allocations
+        let result = self.process_no_alloc(input)?;
+        
+        Ok(result)
     }
 }
-```
 
-## 🏆 Code Quality Standards
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_critical_operation() -> Result<()> {
+        let module = ModuleName::new(Config::default())?;
+        let input = Input::default();
+        
+        let start = std::time::Instant::now();
+        let result = module.critical_operation(&input)?;
+        let elapsed = start.elapsed();
+        
+        assert!(elapsed.as_millis() < 1, "Operation too slow: {:?}", elapsed);
+        assert!(result.is_valid());
+        
+        Ok(())
+    }
+}
+Error Handling Pattern
+rust/// Custom error types for each module
+#[derive(thiserror::Error, Debug)]
+pub enum StrategyError {
+    #[error("Insufficient liquidity: {available} < {required}")]
+    InsufficientLiquidity { available: U256, required: U256 },
+    
+    #[error("Blockchain error: {0}")]
+    Blockchain(#[from] BlockchainError),
+    
+    #[error("Simulation failed: {0}")]
+    SimulationFailed(String),
+}
 
-### ✅ Enforced Rules
-- **Zero panic policy** - No `unwrap()`, `expect()`, `panic!()`
-- **Error handling** - All functions return `Result<T, E>`
-- **Performance** - Critical paths must be <1ms
-- **Memory safety** - No unsafe code without documentation
-- **Testing** - All modules have comprehensive tests
+/// Always return Result
+pub fn execute_strategy(params: &StrategyParams) -> Result<ExecutionResult, StrategyError> {
+    // Validate parameters
+    validate_params(params)?;
+    
+    // Check liquidity
+    let liquidity = get_liquidity(params.pool).await?;
+    if liquidity < params.required {
+        return Err(StrategyError::InsufficientLiquidity {
+            available: liquidity,
+            required: params.required,
+        });
+    }
+    
+    // Execute
+    let result = simulate_execution(params).await?;
+    
+    Ok(result)
+}
+Performance Optimization Patterns
+rust/// Zero-allocation design for hot paths
+pub struct HotPath {
+    // Pre-allocated buffers
+    buffer: [u8; 1024],
+    // Reusable scratch space
+    scratch: Vec<u8>,
+}
 
-### 🧪 Testing Strategy
-```bash
-# Unit tests
-cargo test --lib
+impl HotPath {
+    pub fn new() -> Self {
+        Self {
+            buffer: [0; 1024],
+            scratch: Vec::with_capacity(1024),
+        }
+    }
+    
+    /// Process without allocations
+    #[inline(always)]
+    pub fn process(&mut self, data: &[u8]) -> Result<&[u8]> {
+        // Reuse buffer
+        let len = data.len().min(self.buffer.len());
+        self.buffer[..len].copy_from_slice(&data[..len]);
+        
+        // Process in-place
+        self.process_in_place(&mut self.buffer[..len])?;
+        
+        Ok(&self.buffer[..len])
+    }
+    
+    #[inline(always)]
+    fn process_in_place(&self, data: &mut [u8]) -> Result<()> {
+        // Modify data in-place without allocations
+        for byte in data.iter_mut() {
+            *byte ^= 0xFF;
+        }
+        Ok(())
+    }
+}
 
-# Integration tests
-cargo test --test integration
+/// Lock-free data structures
+use crossbeam::queue::SegQueue;
+use std::sync::atomic::{AtomicU64, Ordering};
 
-# Performance tests
-cargo test test_latency_requirement
-```
+pub struct LockFreeCounter {
+    queue: SegQueue<Event>,
+    count: AtomicU64,
+}
 
-## 📈 Monitoring & Metrics
+impl LockFreeCounter {
+    #[inline(always)]
+    pub fn increment(&self) -> u64 {
+        self.count.fetch_add(1, Ordering::Relaxed)
+    }
+    
+    #[inline(always)]
+    pub fn push_event(&self, event: Event) {
+        self.queue.push(event);
+    }
+}
+Async Pattern with Timeouts
+rustuse tokio::time::{timeout, Duration};
 
-### Built-in Metrics
-- Transaction processing latency
-- MEV opportunities found
-- Error rates and types
-- Memory usage patterns
-- Queue sizes and throughput
+/// All async operations MUST have timeouts
+pub async fn fetch_data(endpoint: &str) -> Result<Data> {
+    // 5 second timeout for network operations
+    let result = timeout(
+        Duration::from_secs(5),
+        fetch_internal(endpoint)
+    ).await;
+    
+    match result {
+        Ok(Ok(data)) => Ok(data),
+        Ok(Err(e)) => Err(Error::FetchFailed(e)),
+        Err(_) => Err(Error::Timeout("Fetch timeout".into())),
+    }
+}
 
-### Prometheus Integration
-```rust
-use tallyio_metrics::MetricsManager;
+/// Concurrent operations with controlled parallelism
+pub async fn fetch_multiple(endpoints: Vec<String>) -> Result<Vec<Data>> {
+    use futures::stream::{self, StreamExt};
+    
+    // Limit concurrent requests to 10
+    let results = stream::iter(endpoints)
+        .map(|endpoint| fetch_data(&endpoint))
+        .buffer_unordered(10)
+        .collect::<Vec<_>>()
+        .await;
+    
+    // Collect successful results
+    results.into_iter().collect::<Result<Vec<_>>>()
+}
+📁 Project Structure
+tallyio/
+├── Cargo.toml                    # Workspace configuration
+├── README.md                     # This file
+├── .windsurfrules               # Windsurf AI rules
+├── navodila.md                  # Slovenian instructions
+├── koda.md                      # Coding standards
+│
+├── crates/                      # All Rust modules
+│   ├── core/                    # [✅ DONE] Ultra-performance core (<1ms)
+│   │   ├── Cargo.toml
+│   │   ├── src/
+│   │   │   ├── lib.rs          # Public API
+│   │   │   ├── engine/         # Main execution engine
+│   │   │   ├── state/          # State management
+│   │   │   ├── mempool/        # Mempool processing
+│   │   │   └── optimization/   # Performance optimizations
+│   │   └── benches/            # Performance benchmarks
+│   │
+│   ├── secure_storage/          # [PHASE 2.1] Encrypted storage
+│   ├── data_storage/            # [PHASE 2.2] PostgreSQL + TimescaleDB
+│   ├── network/                 # [PHASE 2.3] WebSocket + HTTP
+│   ├── blockchain/              # [PHASE 3.1] Multi-chain support
+│   ├── wallet/                  # [PHASE 3.2] Wallet management
+│   ├── risk/                    # [PHASE 4.1] Risk management
+│   ├── simulator/               # [PHASE 4.2] Transaction simulation
+│   ├── strategies/              # [PHASE 5.1] Trading strategies
+│   ├── tallyio_metrics/         # [PHASE 6.1] Metrics collection
+│   ├── data/                    # [PHASE 6.2] Data pipeline
+│   ├── ml/                      # [PHASE 7.1] Machine learning
+│   ├── api/                     # [PHASE 8.1] REST + WebSocket API
+│   ├── cli/                     # [PHASE 8.2] CLI tools
+│   ├── cross_chain/             # [PHASE 8.3] Cross-chain
+│   ├── config_engine/           # [PHASE 9.1] Dynamic config
+│   ├── template_engine/         # [PHASE 9.2] Template system
+│   ├── codegen/                 # [PHASE 9.3] Code generation
+│   ├── runtime/                 # [PHASE 9.4] Module runtime
+│   ├── control_plane/           # [PHASE 9.5] Orchestration
+│   └── ui_backend/              # [PHASE 9.6] UI backend
+│
+├── templates/                   # Code generation templates
+│   ├── chains/                  # Chain templates
+│   ├── protocols/               # Protocol templates
+│   └── strategies/              # Strategy templates
+│
+├── ui/                          # [PHASE 10] React dashboard
+│   ├── src/
+│   │   ├── pages/              # Dashboard pages
+│   │   ├── components/         # Reusable components
+│   │   ├── hooks/              # Custom hooks
+│   │   └── services/           # API services
+│   └── package.json
+│
+├── migrations/                  # Database migrations
+├── config/                      # Configuration files
+├── tests/                       # Integration tests
+├── benches/                     # Performance benchmarks
+└── docs/                        # Documentation
+    ├── architecture/            # Architecture docs
+    ├── api/                     # API documentation
+    └── guides/                  # User guides
+🚀 Implementation Phases
+Phase 1: Core [✅ COMPLETED]
 
-let metrics = MetricsManager::new()?;
-metrics.record_transaction_latency(duration);
-metrics.record_mev_opportunity();
-```
+Ultra-performance engine
+Lock-free data structures
+Zero-allocation hot paths
 
-## 🔐 Security Features
+Phase 2: Infrastructure [🔄 IN PROGRESS]
 
-- **Input validation** on all external data
-- **Rate limiting** for API endpoints
-- **Secure key management** for blockchain interactions
-- **Audit logging** for all critical operations
+secure_storage: Encrypted key storage
+data_storage: PostgreSQL + TimescaleDB
+network: WebSocket + HTTP clients
 
-## 🚀 Deployment
+Phase 3: Blockchain Layer
 
-### Docker
-```bash
-docker build -t tallyio .
-docker run -p 8080:8080 tallyio
-```
+blockchain: Multi-chain abstractions
+wallet: Secure wallet management
 
-### Kubernetes
-```bash
-kubectl apply -f deployment/kubernetes/
-```
+Phase 4: Risk & Simulation
 
-## 📚 Documentation
+risk: Comprehensive risk management
+simulator: EVM simulation engine
 
-- [Core API Reference](docs/core-api.md)
-- [Blockchain Integration](docs/blockchain.md)
-- [Performance Tuning](docs/performance.md)
-- [Deployment Guide](docs/deployment.md)
+Phase 5: Strategies
 
-## 🚀 CI/CD Pipeline
+strategies: MEV, arbitrage, liquidation
 
-TallyIO uses a unified GitHub Actions workflow for comprehensive automated testing and deployment:
+Phase 6: Monitoring
 
-### 🔄 Single Workflow Strategy
-- **Unified pipeline**: All checks (quality, tests, coverage, security, docker) in one workflow
-- **Minimal runs**: Optimized to prevent multiple concurrent workflow executions
-- **Consistent validation**: Local `scripts/quick-check.ps1` mirrors GitHub Actions CI/CD
-- **Fast feedback**: Run full CI checks locally before pushing
+tallyio_metrics: Real-time metrics
+data: Data pipeline
 
-### 🛡️ Quality Gates
-- **Zero panic policy**: Automated detection of `unwrap()`, `expect()`, `panic!()`
-- **Ultra-strict Clippy**: 50+ lint rules for maximum code quality
-- **Security audit**: Integrated vulnerability scanning with cargo-audit
-- **Supply chain security**: Automated dependency verification with cargo-deny
-- **Code coverage**: Minimum 90% overall, 100% for critical modules
-- **Performance tests**: <1ms latency requirement verification
+Phase 7: Intelligence
 
-## 🤝 Contributing
+ml: Machine learning models
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Ensure all tests pass (`cargo test --all`)
-4. Run clippy (`cargo clippy --all-targets -- -D warnings`)
-5. Check coverage meets requirements (see [Codecov Setup](docs/codecov-setup.md))
-6. Commit changes (`git commit -m 'Add amazing feature'`)
-7. Push to branch (`git push origin feature/amazing-feature`)
-8. Open Pull Request
+Phase 8: APIs & Tools
 
-### 📊 Code Coverage Setup
-To enable automatic coverage tracking, configure the `CODECOV_TOKEN` secret in GitHub repository settings. See [docs/codecov-setup.md](docs/codecov-setup.md) for detailed instructions.
+api: REST + WebSocket + GraphQL
+cli: Command-line tools
+cross_chain: Cross-chain support
 
-### 🔄 Dependency Management
-TallyIO uses Dependabot for automated dependency updates with optimized batching:
-- **Single PR strategy**: All Rust dependencies are batched into one weekly PR
-- **Minimal workflow runs**: `open-pull-requests-limit: 1` prevents multiple concurrent PRs
-- **Smart grouping**: All updates (minor, patch, major) are grouped together
-- **Critical dependency protection**: Major updates for `tokio`, `sqlx`, `ethers`, and `web3` require manual review
+Phase 9: Dynamic System
 
-## 📄 License
+config_engine: Hot-reload configs
+template_engine: Code templates
+codegen: Code generation
+runtime: Dynamic loading
+control_plane: Orchestration
+ui_backend: Dashboard backend
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Phase 10: User Interface
 
-## 🏆 Status
+ui: Complete React dashboard
 
-- ✅ **Core Engine** - Production ready with <1ms latency
-- ✅ **Error Handling** - Zero panic guarantee implemented
-- ✅ **Testing** - Comprehensive test suite
-- 🚧 **Blockchain Integration** - In development
-- 🚧 **API Layer** - In development
-- 🚧 **Web UI** - Planned
+⚡ Performance Guidelines
+Critical Path Requirements
+rust/// Functions in critical path MUST:
+/// 1. Complete in < 1ms
+/// 2. Zero heap allocations
+/// 3. Use #[inline(always)]
+/// 4. No blocking operations
+/// 5. No mutex locks
 
----
+#[inline(always)]
+pub fn critical_path_function(input: &Input) -> Result<Output> {
+    // Pre-allocated buffer
+    let mut buffer = [0u8; 256];
+    
+    // Process without allocations
+    process_in_place(&mut buffer, input)?;
+    
+    // Return without copying
+    Ok(Output::from_buffer(&buffer))
+}
+Memory Management
+rust/// Use arena allocators for temporary allocations
+use bumpalo::Bump;
 
-**Built with ❤️ for ultra-high performance financial applications**
+pub struct RequestHandler {
+    arena: Bump,
+}
+
+impl RequestHandler {
+    pub fn handle_request(&mut self, req: Request) -> Result<Response> {
+        // Reset arena for new request
+        self.arena.reset();
+        
+        // All allocations use arena
+        let temp_data = self.arena.alloc_slice_copy(&req.data);
+        
+        // Process using arena allocations
+        let result = process_with_arena(&self.arena, temp_data)?;
+        
+        // Arena automatically cleaned up
+        Ok(result)
+    }
+}
+Concurrency Patterns
+rust/// Use DashMap for concurrent access
+use dashmap::DashMap;
+
+pub struct ConcurrentCache {
+    data: DashMap<Key, Value>,
+}
+
+/// Use atomics for counters
+use std::sync::atomic::{AtomicU64, Ordering};
+
+pub struct Metrics {
+    requests: AtomicU64,
+    errors: AtomicU64,
+}
+
+impl Metrics {
+    #[inline(always)]
+    pub fn increment_requests(&self) {
+        self.requests.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
+/// Use crossbeam for lock-free queues
+use crossbeam::queue::SegQueue;
+
+pub struct EventQueue {
+    queue: SegQueue<Event>,
+}
+🧪 Testing Requirements
+Unit Tests
+Every public function MUST have tests:
+rust#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_success_case() -> Result<()> {
+        let module = Module::new(Config::default())?;
+        let result = module.operation(valid_input())?;
+        assert_eq!(result, expected_output());
+        Ok(())
+    }
+    
+    #[test]
+    fn test_error_case() -> Result<()> {
+        let module = Module::new(Config::default())?;
+        let result = module.operation(invalid_input());
+        assert!(matches!(result, Err(Error::InvalidInput(_))));
+        Ok(())
+    }
+    
+    #[test]
+    fn test_performance() -> Result<()> {
+        let module = Module::new(Config::default())?;
+        let start = Instant::now();
+        
+        for _ in 0..1000 {
+            module.critical_operation(&input)?;
+        }
+        
+        let avg = start.elapsed() / 1000;
+        assert!(avg < Duration::from_micros(1000), "Too slow: {:?}", avg);
+        Ok(())
+    }
+}
+Integration Tests
+rust// tests/integration_test.rs
+use tallyio_core::*;
+use tallyio_blockchain::*;
+
+#[tokio::test]
+async fn test_end_to_end_flow() -> Result<()> {
+    // Setup
+    let core = Core::new(Config::test())?;
+    let blockchain = Blockchain::new(ChainConfig::test())?;
+    
+    // Execute flow
+    let opportunity = find_opportunity(&blockchain).await?;
+    let result = core.execute(opportunity).await?;
+    
+    // Verify
+    assert!(result.success);
+    assert!(result.profit > 0);
+    
+    Ok(())
+}
+Performance Benchmarks
+rust// benches/core_bench.rs
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+
+fn benchmark_critical_path(c: &mut Criterion) {
+    let module = Module::new(Config::default()).unwrap();
+    let input = create_test_input();
+    
+    c.bench_function("critical_path", |b| {
+        b.iter(|| {
+            black_box(module.critical_operation(black_box(&input)))
+        })
+    });
+}
+
+criterion_group!(benches, benchmark_critical_path);
+criterion_main!(benches);
+🔒 Security Guidelines
+Secure Storage
+rust/// All sensitive data MUST use secure_storage
+use secure_storage::{SecureStorage, KeyId};
+
+pub struct WalletManager {
+    storage: Arc<SecureStorage>,
+}
+
+impl WalletManager {
+    pub async fn store_private_key(
+        &self,
+        key: &[u8],
+        wallet_id: &str,
+    ) -> Result<KeyId> {
+        // NEVER store plain text
+        let key_id = self.storage
+            .store_encrypted(key, wallet_id)
+            .await?;
+        
+        // Audit log
+        audit_log!("Private key stored for wallet: {}", wallet_id);
+        
+        Ok(key_id)
+    }
+}
+Input Validation
+rust/// ALWAYS validate external inputs
+pub fn validate_transaction(tx: &Transaction) -> Result<()> {
+    // Check addresses
+    if !is_valid_address(&tx.from) || !is_valid_address(&tx.to) {
+        return Err(Error::InvalidAddress);
+    }
+    
+    // Check amounts
+    if tx.value == U256::zero() {
+        return Err(Error::ZeroAmount);
+    }
+    
+    // Check gas
+    if tx.gas_price > MAX_GAS_PRICE {
+        return Err(Error::GasTooHigh);
+    }
+    
+    Ok(())
+}
+🛠️ Development Workflow
+Pre-commit Checklist
+
+Format code: cargo fmt --all
+Run clippy: cargo clippy --all-targets --all-features -- -D warnings
+Run tests: cargo test --all
+Check security: cargo audit
+Run benchmarks: cargo bench
+Update docs: cargo doc --no-deps
+
+Code Review Requirements
+
+ No unwrap() or expect()
+ All errors handled properly
+ Performance requirements met
+ Tests cover all cases
+ Documentation complete
+ Security validated
+
+📝 Configuration
+Environment Variables
+bash# Core settings
+TALLYIO_THREADS=8
+TALLYIO_CPU_AFFINITY=true
+TALLYIO_LOG_LEVEL=info
+
+# Network
+TALLYIO_HTTP_TIMEOUT=30
+TALLYIO_WS_RECONNECT=5
+
+# Storage
+DATABASE_URL=postgresql://user:pass@localhost/tallyio
+REDIS_URL=redis://localhost:6379
+
+# Chains
+ETH_RPC_PRIMARY=https://eth-mainnet.g.alchemy.com/v2/KEY
+ETH_RPC_SECONDARY=https://mainnet.infura.io/v3/KEY
+
+# Security
+VAULT_ADDR=http://localhost:8200
+VAULT_TOKEN=your-token
+Config File (config.toml)
+toml[core]
+thread_count = 8
+cpu_affinity = true
+memory_pool_size = "1GB"
+
+[performance]
+critical_path_timeout_ms = 1
+simulation_timeout_ms = 10
+max_concurrent_strategies = 100
+
+[risk]
+max_position_size = "100 ETH"
+max_gas_price = "500 gwei"
+circuit_breaker_loss_threshold = "10 ETH"
+
+[monitoring]
+metrics_interval_seconds = 1
+export_format = "prometheus"
+port = 9090
+🚨 Common Pitfalls to Avoid
+❌ NEVER DO THIS
+rust// ❌ WRONG - Will panic
+let value = map.get(&key).unwrap();
+
+// ❌ WRONG - Blocks thread
+let result = blocking_operation();
+
+// ❌ WRONG - Allocates in hot path
+let vec = vec![1, 2, 3, 4, 5];
+
+// ❌ WRONG - Uses mutex in critical path
+let data = mutex.lock().unwrap();
+✅ ALWAYS DO THIS
+rust// ✅ CORRECT - Proper error handling
+let value = map.get(&key).ok_or(Error::NotFound)?;
+
+// ✅ CORRECT - Async with timeout
+let result = timeout(Duration::from_secs(5), async_operation()).await?;
+
+// ✅ CORRECT - Pre-allocated
+let mut vec = Vec::with_capacity(5);
+
+// ✅ CORRECT - Lock-free
+let data = atomic.load(Ordering::Relaxed);
+📞 Support & Resources
+
+Documentation: docs/
+Architecture: docs/architecture/
+API Reference: Run cargo doc --open
+Performance Guide: docs/optimizations/
+
+⚖️ License
+This project is licensed under the MIT License. See LICENSE file for details.
+⚠️ Important Notes
+
+This is a financial system - bugs can cause monetary loss
+Always test thoroughly before deployment
+Monitor performance metrics continuously
+Security is paramount - never compromise
+When in doubt, choose safety over performance
+
+
+Remember: The goal is ULTRA-PERFORMANCE (<1ms) with ZERO PANICS. Every line of code must serve this purpose.

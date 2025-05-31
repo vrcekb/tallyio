@@ -32,7 +32,7 @@ impl Price {
     /// Create price from gwei
     #[must_use]
     pub const fn from_gwei(gwei: u64) -> Self {
-        Self(gwei * 1_000_000_000)
+        Self(gwei.saturating_mul(1_000_000_000))
     }
 
     /// Get the price in gwei
@@ -44,7 +44,7 @@ impl Price {
     /// Create price from ether
     #[must_use]
     pub const fn from_ether(ether: u64) -> Self {
-        Self(ether * 1_000_000_000_000_000_000)
+        Self(ether.saturating_mul(1_000_000_000_000_000_000))
     }
 
     /// Get the price in ether

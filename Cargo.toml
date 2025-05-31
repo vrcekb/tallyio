@@ -12,6 +12,33 @@ members = [
 ]
 resolver = "2"
 
+# Root package for integration tests
+[package]
+name = "tallyio"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tallyio-core = { path = "crates/core" }
+fastrand = { workspace = true }
+
+# Integration test targets
+[[test]]
+name = "chaos_engineering_tests"
+path = "tests/chaos_engineering_tests.rs"
+
+[[test]]
+name = "market_simulation_tests"
+path = "tests/market_simulation_tests.rs"
+
+[[test]]
+name = "fuzzing_tests"
+path = "tests/fuzzing_tests.rs"
+
+[[test]]
+name = "testnet_e2e_tests"
+path = "tests/testnet_e2e_tests.rs"
+
 [workspace.dependencies]
 # Performance & Concurrency
 tokio = { version = "1.35", features = ["full"] }
@@ -35,11 +62,16 @@ thiserror = "1.0"
 anyhow = "1.0"
 
 # Database
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+sqlx = { version = "0.8", features = [
+    "runtime-tokio-rustls",
+    "postgres",
+    "chrono",
+    "uuid",
+] }
 redis = { version = "0.24", features = ["tokio-comp"] }
 
 # Blockchain
-ethers = "2.0.14"  # Latest patch version
+ethers = "2.0.14" # Latest patch version
 web3 = "0.19"
 
 # Crypto
@@ -57,9 +89,12 @@ jemallocator = "0.5"
 # Time
 chrono = { version = "0.4", features = ["serde"] }
 
+# Testing & Fuzzing
+fastrand = "2.0"
+
 # Security fixes for transitive dependencies
 idna = "1.0.3"  # Fix RUSTSEC-2024-0421
-ring = "0.17.8"  # Fix RUSTSEC-2025-0009
+ring = "0.17.8" # Fix RUSTSEC-2025-0009
 
 [profile.release]
 lto = true

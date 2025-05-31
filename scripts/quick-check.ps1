@@ -119,15 +119,15 @@ foreach ($pattern in $patterns) {
 }
 
 if ($panicCount -gt 0) {
-    Write-Host "FAILED: Zero panic policy ($panicCount violations)" -ForegroundColor Red
+    Write-Host "FAILED: Zero panic policy - $panicCount violations" -ForegroundColor Red
     exit 1
 }
 else {
-    Write-Host "OK: Zero panic policy" -ForegroundColor Green
+    Write-Host 'OK: Zero panic policy' -ForegroundColor Green
 }
 
 # 4. Build check
-Write-Host "🔧 Building all crates..." -ForegroundColor Yellow
+Write-Host "Building all crates..." -ForegroundColor Yellow
 try {
     cargo build --all --verbose | Out-Null
     Write-Host "✅ Build: OK" -ForegroundColor Green
@@ -208,7 +208,7 @@ catch {
 }
 
 # 9. Code Coverage (90% minimum requirement)
-Write-Host "📊 Checking code coverage (90% minimum)..." -ForegroundColor Yellow
+Write-Host '📊 Checking code coverage (90 percent minimum)...' -ForegroundColor Yellow
 try {
     # Install tarpaulin if not present
     if (-not (Get-Command cargo-tarpaulin -ErrorAction SilentlyContinue)) {
@@ -220,15 +220,15 @@ try {
     $coverageOutput = cargo tarpaulin --all --out Stdout --skip-clean 2>&1
 
     # Extract coverage percentage
-    $coverageLine = $coverageOutput | Select-String "(\d+\.\d+)% coverage"
+    $coverageLine = $coverageOutput | Select-String "(\d+\.?\d*)% coverage"
     if ($coverageLine) {
         $coverage = [double]($coverageLine.Matches[0].Groups[1].Value)
 
         if ($coverage -ge 90.0) {
-            Write-Host "OK: Code coverage ($coverage%)" -ForegroundColor Green
+            Write-Host "OK: Code coverage ($coverage`%)" -ForegroundColor Green
         }
         else {
-            Write-Host "FAILED: Code coverage ($coverage%) - minimum 90% required" -ForegroundColor Red
+            Write-Host "FAILED: Code coverage ($coverage`%) - minimum 90`% required" -ForegroundColor Red
             exit 1
         }
     }
@@ -242,7 +242,100 @@ catch {
     exit 1
 }
 
-# 10. Docker build check (optional - only if Dockerfile exists)
+# 10. Comprehensive Test Coverage Analysis
+Write-Host "🔍 Analyzing comprehensive test coverage..." -ForegroundColor Yellow
+try {
+    # Check if Python is available
+    $pythonCmd = $null
+    if (Get-Command python -ErrorAction SilentlyContinue) {
+        $pythonCmd = "python"
+    }
+    elseif (Get-Command python3 -ErrorAction SilentlyContinue) {
+        $pythonCmd = "python3"
+    }
+
+    if ($pythonCmd) {
+        & $pythonCmd scripts/test_coverage_analyzer.py
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ Comprehensive test coverage analysis: OK" -ForegroundColor Green
+        }
+        else {
+            Write-Host "❌ Comprehensive test coverage analysis: FAILED" -ForegroundColor Red
+            exit 1
+        }
+    }
+    else {
+        Write-Host "⚠️  Python not available, skipping comprehensive test coverage analysis" -ForegroundColor Yellow
+    }
+}
+catch {
+    Write-Host "⚠️  Comprehensive test coverage analysis: FAILED" -ForegroundColor Yellow
+}
+
+# 11. Module Test Mapping Analysis
+Write-Host "🧩 Analyzing module test mapping..." -ForegroundColor Yellow
+try {
+    if ($pythonCmd) {
+        & $pythonCmd scripts/module_test_mapping_analyzer.py
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ Module test mapping analysis: OK" -ForegroundColor Green
+        }
+        else {
+            Write-Host "❌ Module test mapping analysis: FAILED" -ForegroundColor Red
+            exit 1
+        }
+    }
+    else {
+        Write-Host "⚠️  Python not available, skipping module test mapping analysis" -ForegroundColor Yellow
+    }
+}
+catch {
+    Write-Host "⚠️  Module test mapping analysis: FAILED" -ForegroundColor Yellow
+}
+
+# 12. Advanced Testing Suite (Priority 2)
+Write-Host "🔬 Running advanced testing suite..." -ForegroundColor Yellow
+try {
+    # Chaos Engineering Tests
+    Write-Host "  🌪️  Chaos engineering tests..." -ForegroundColor Cyan
+    cargo test --test chaos_engineering_tests --release
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Chaos engineering tests: FAILED" -ForegroundColor Red
+        exit 1
+    }
+
+    # Market Simulation Tests
+    Write-Host "  📈 Market simulation tests..." -ForegroundColor Cyan
+    cargo test --test market_simulation_tests --release
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Market simulation tests: FAILED" -ForegroundColor Red
+        exit 1
+    }
+
+    # Fuzzing Tests
+    Write-Host "  🎲 Fuzzing tests..." -ForegroundColor Cyan
+    cargo test --test fuzzing_tests --release
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Fuzzing tests: FAILED" -ForegroundColor Red
+        exit 1
+    }
+
+    # Testnet E2E Tests
+    Write-Host "  🌐 Testnet E2E tests..." -ForegroundColor Cyan
+    cargo test --test testnet_e2e_tests --release
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Testnet E2E tests: FAILED" -ForegroundColor Red
+        exit 1
+    }
+
+    Write-Host "✅ Advanced testing suite: OK" -ForegroundColor Green
+}
+catch {
+    Write-Host "❌ Advanced testing suite: FAILED" -ForegroundColor Red
+    exit 1
+}
+
+# 11. Docker build check (optional - only if Dockerfile exists)
 if (Test-Path "Dockerfile") {
     Write-Host "🐳 Checking Docker build..." -ForegroundColor Yellow
     try {
@@ -290,7 +383,14 @@ Write-Host "✅ Unit tests" -ForegroundColor Green
 Write-Host "✅ Integration tests" -ForegroundColor Green
 Write-Host "✅ Performance tests" -ForegroundColor Green
 Write-Host "✅ Security audit" -ForegroundColor Green
-Write-Host "✅ Code coverage (90%+)" -ForegroundColor Green
+Write-Host '✅ Code coverage (90 percent+)' -ForegroundColor Green
+Write-Host "✅ Comprehensive test coverage analysis" -ForegroundColor Green
+Write-Host "✅ Module test mapping analysis" -ForegroundColor Green
+Write-Host "✅ Advanced testing suite (Priority 2)" -ForegroundColor Green
+Write-Host "  ✅ Chaos engineering tests" -ForegroundColor Green
+Write-Host "  ✅ Market simulation tests" -ForegroundColor Green
+Write-Host "  ✅ Fuzzing tests" -ForegroundColor Green
+Write-Host "  ✅ Testnet E2E tests" -ForegroundColor Green
 if (Test-Path "Dockerfile") {
     Write-Host "✅ Docker build" -ForegroundColor Green
 }

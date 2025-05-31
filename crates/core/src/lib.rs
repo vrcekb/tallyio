@@ -177,9 +177,17 @@ mod tests {
         let _opportunities = engine.scan_mev_opportunity(&tx)?;
         let elapsed = start.elapsed();
 
+        // In coverage mode, allow more time due to instrumentation overhead
+        #[allow(unexpected_cfgs)]
+        let max_duration = if cfg!(coverage) || cfg!(coverage_nightly) {
+            Duration::from_millis(10) // More lenient for coverage builds
+        } else {
+            Duration::from_millis(2) // Strict for production builds
+        };
+
         assert!(
-            elapsed < Duration::from_millis(2),
-            "MEV scanning took {elapsed:?}"
+            elapsed < max_duration,
+            "MEV scanning took {elapsed:?} (max allowed: {max_duration:?})"
         );
         Ok(())
     }

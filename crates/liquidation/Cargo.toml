@@ -9,3 +9,11 @@ tokio = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 tallyio-core = { path = "../core" }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+tokio-test = "0.4"
+
+[[bench]]
+name = "bench_liquidation"
+harness = false

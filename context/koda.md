@@ -230,4 +230,4 @@ mod tests {
 }
 CILJ: Ultra-performančna, varna, panic-free koda za finančni sistem, production ready. Ne uporabljaj mok-ov, razen če je nujno za delovanje aplikacije v produkciji.
 
-Vsi testi se shranijo v centralni testni direktorij E:\alpha\Tallyio\tests!!
+Vsi univerzalni testi se shranijo v centralni testni direktorij E:\alpha\Tallyio\tests!!

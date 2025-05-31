@@ -4188,6 +4188,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tallyio"
+version = "0.1.0"
+dependencies = [
+ "fastrand",
+ "tallyio-core",
+]
+
+[[package]]
 name = "tallyio-api"
 version = "0.1.0"
 dependencies = [
@@ -4205,6 +4213,7 @@ dependencies = [
 name = "tallyio-blockchain"
 version = "0.1.0"
 dependencies = [
+ "criterion",
  "ethers",
  "idna 1.0.3",
  "reqwest",
@@ -4244,6 +4253,7 @@ dependencies = [
  "criterion",
  "crossbeam",
  "dashmap",
+ "fastrand",
  "libc",
  "log",
  "num-traits",
@@ -4275,16 +4285,19 @@ dependencies = [
 name = "tallyio-liquidation"
 version = "0.1.0"
 dependencies = [
+ "criterion",
  "serde",
  "tallyio-core",
  "thiserror 1.0.69",
  "tokio",
+ "tokio-test",
 ]
 
 [[package]]
 name = "tallyio-metrics"
 version = "0.1.0"
 dependencies = [
+ "criterion",
  "prometheus",
  "serde",
  "tallyio-core",

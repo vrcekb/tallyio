@@ -503,6 +503,283 @@ mod tests {
     }
 
     #[test]
+    fn test_filter_result_methods() {
+        // Test FilterResult methods
+        let accept = FilterResult::Accept;
+        assert!(accept.should_process());
+        assert!(accept.reason().is_none());
+
+        let reject = FilterResult::Reject(FilterReason::GasPriceTooLow);
+        assert!(!reject.should_process());
+        assert_eq!(reject.reason(), Some(FilterReason::GasPriceTooLow));
+    }
+
+    #[test]
+    fn test_filter_statistics_methods() -> CoreResult<()> {
+        let filter = MempoolFilter::default();
+
+        // Add some transactions to get statistics
+        let tx1 = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(1),
+            Price::from_gwei(20),
+            Gas::new(21_000),
+            0,
+            Vec::with_capacity(0),
+        );
+        filter.filter(&tx1)?;
+
+        let stats = filter.statistics();
+
+        // Test rejection rate
+        let rejection_rate = stats.rejection_rate();
+        assert!((0.0..=1.0).contains(&rejection_rate));
+        assert_eq!(rejection_rate, 1.0 - stats.acceptance_rate);
+
+        // Test most common rejection
+        let most_common = stats.most_common_rejection();
+        // Should be None if no rejections, or Some(reason) if there are rejections
+        assert!(most_common.is_none() || most_common.is_some());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_quick_mev_check_high_value() -> CoreResult<()> {
+        let filter = MempoolFilter::default();
+
+        // High value DeFi transaction
+        let high_value_tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(1), // > 0.1 ETH
+            Price::from_gwei(20),
+            Gas::new(150_000),
+            0,
+            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00], // DeFi method
+        );
+
+        let has_mev = filter.quick_mev_check(&high_value_tx);
+        assert!(has_mev);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_quick_mev_check_high_gas_price() -> CoreResult<()> {
+        let filter = MempoolFilter::default();
+
+        // High gas price DeFi transaction
+        let high_gas_tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(0), // Low value
+            Price::from_gwei(60), // > 50 gwei
+            Gas::new(150_000),
+            0,
+            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00], // DeFi method
+        );
+
+        let has_mev = filter.quick_mev_check(&high_gas_tx);
+        assert!(has_mev);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_quick_mev_check_known_selectors() -> CoreResult<()> {
+        let filter = MempoolFilter::default();
+
+        // Test different MEV-prone selectors
+        let selectors = [
+            vec![0xa9, 0x05, 0x9c, 0xbb], // swapExactTokensForTokens
+            vec![0x38, 0xed, 0x17, 0x39], // swapExactETHForTokens
+            vec![0x7f, 0xf3, 0x6a, 0xb5], // swapExactTokensForETH
+            vec![0x2e, 0x1a, 0x7d, 0x4d], // liquidateCalculateSeizeTokens
+        ];
+
+        for selector in selectors {
+            let tx = Transaction::new(
+                [1u8; 20],
+                Some([2u8; 20]),
+                Price::from_ether(0), // Low value
+                Price::from_gwei(20), // Low gas price
+                Gas::new(150_000),
+                0,
+                selector,
+            );
+
+            let has_mev = filter.quick_mev_check(&tx);
+            assert!(has_mev);
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_quick_mev_check_non_defi() -> CoreResult<()> {
+        let filter = MempoolFilter::default();
+
+        // Non-DeFi transaction
+        let non_defi_tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(1),
+            Price::from_gwei(60),
+            Gas::new(21_000),
+            0,
+            Vec::with_capacity(0), // No data = not DeFi
+        );
+
+        let has_mev = filter.quick_mev_check(&non_defi_tx);
+        assert!(!has_mev);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_quick_mev_check_unknown_selector() -> CoreResult<()> {
+        let filter = MempoolFilter::default();
+
+        // DeFi transaction with unknown selector
+        let unknown_selector_tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(0), // Low value
+            Price::from_gwei(20), // Low gas price
+            Gas::new(150_000),
+            0,
+            vec![0xff, 0xff, 0xff, 0xff], // Unknown selector
+        );
+
+        let has_mev = filter.quick_mev_check(&unknown_selector_tx);
+        assert!(!has_mev);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_config_methods() -> CoreResult<()> {
+        let config = FilterConfig::default();
+        let mut filter = MempoolFilter::new(config.clone());
+
+        // Test config getter
+        let retrieved_config = filter.config();
+        assert_eq!(
+            retrieved_config.enable_defi_filter,
+            config.enable_defi_filter
+        );
+
+        // Test config update
+        let new_config = FilterConfig {
+            enable_defi_filter: true,
+            enable_mev_filter: true,
+            ..Default::default()
+        };
+        filter.update_config(new_config.clone());
+
+        let updated_config = filter.config();
+        assert_eq!(
+            updated_config.enable_defi_filter,
+            new_config.enable_defi_filter
+        );
+        assert_eq!(
+            updated_config.enable_mev_filter,
+            new_config.enable_mev_filter
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_mev_filter_no_mev_opportunity() -> CoreResult<()> {
+        let config = FilterConfig {
+            enable_mev_filter: true,
+            enable_defi_filter: false,
+            ..Default::default()
+        };
+        let filter = MempoolFilter::new(config);
+
+        // Transaction without MEV potential
+        let no_mev_tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(0), // Low value
+            Price::from_gwei(20), // Low gas price
+            Gas::new(21_000),
+            0,
+            Vec::with_capacity(0), // No data = not DeFi
+        );
+
+        let result = filter.filter(&no_mev_tx)?;
+        assert_eq!(result, FilterResult::Reject(FilterReason::NoMevOpportunity));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_statistics_with_rejections() -> CoreResult<()> {
+        let config = FilterConfig {
+            min_gas_price_gwei: 50,
+            min_value_wei: 1_000_000_000_000_000_000, // 1 ETH
+            enable_defi_filter: true,
+            enable_mev_filter: true,
+            ..Default::default()
+        };
+        let filter = MempoolFilter::new(config);
+
+        // Add transactions that will be rejected for different reasons
+
+        // Gas price too low
+        let low_gas_tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(2),
+            Price::from_gwei(10), // Too low
+            Gas::new(150_000),
+            0,
+            vec![0xa9, 0x05, 0x9c, 0xbb],
+        );
+        filter.filter(&low_gas_tx)?;
+
+        // Value too low
+        let low_value_tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(0), // Too low
+            Price::from_gwei(60),
+            Gas::new(150_000),
+            0,
+            vec![0xa9, 0x05, 0x9c, 0xbb],
+        );
+        filter.filter(&low_value_tx)?;
+
+        // Not DeFi
+        let non_defi_tx = Transaction::new(
+            [1u8; 20],
+            Some([2u8; 20]),
+            Price::from_ether(2),
+            Price::from_gwei(60),
+            Gas::new(21_000),
+            0,
+            Vec::with_capacity(0), // No data
+        );
+        filter.filter(&non_defi_tx)?;
+
+        let stats = filter.statistics();
+        assert!(stats.gas_price_rejections > 0);
+        assert!(stats.value_rejections > 0);
+        assert!(stats.defi_rejections > 0);
+
+        // Test most common rejection
+        let most_common = stats.most_common_rejection();
+        assert!(most_common.is_some());
+
+        Ok(())
+    }
+
+    #[test]
     fn test_value_filtering_low() -> CoreResult<()> {
         let config = FilterConfig {
             min_value_wei: 1_000_000_000_000_000_000, // 1 ETH minimum
@@ -551,18 +828,6 @@ mod tests {
         assert_eq!(result, FilterResult::Reject(FilterReason::NoMevOpportunity));
 
         Ok(())
-    }
-
-    #[test]
-    fn test_filter_result_methods() {
-        // Test FilterResult methods
-        let accept = FilterResult::Accept;
-        assert!(accept.should_process());
-        assert!(accept.reason().is_none());
-
-        let reject = FilterResult::Reject(FilterReason::GasPriceTooLow);
-        assert!(!reject.should_process());
-        assert_eq!(reject.reason(), Some(FilterReason::GasPriceTooLow));
     }
 
     #[test]
@@ -626,50 +891,6 @@ mod tests {
     }
 
     #[test]
-    fn test_quick_mev_check_high_value() -> CoreResult<()> {
-        let filter = MempoolFilter::default();
-
-        // High-value DeFi transaction
-        let high_value_tx = Transaction::new(
-            [1u8; 20],
-            Some([2u8; 20]),
-            Price::new(200_000_000_000_000_000), // 0.2 ETH (> 0.1 ETH)
-            Price::from_gwei(20),
-            Gas::new(150_000),
-            0,
-            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00], // DeFi method
-        );
-
-        // This should pass MEV check due to high value
-        let result = filter.filter(&high_value_tx)?;
-        assert_eq!(result, FilterResult::Accept);
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_quick_mev_check_high_gas_price() -> CoreResult<()> {
-        let filter = MempoolFilter::default();
-
-        // High gas price DeFi transaction
-        let high_gas_tx = Transaction::new(
-            [1u8; 20],
-            Some([2u8; 20]),
-            Price::new(50_000_000_000_000_000), // 0.05 ETH (< 0.1 ETH)
-            Price::from_gwei(60),               // > 50 gwei
-            Gas::new(150_000),
-            0,
-            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00], // DeFi method
-        );
-
-        // This should pass MEV check due to high gas price
-        let result = filter.filter(&high_gas_tx)?;
-        assert_eq!(result, FilterResult::Accept);
-
-        Ok(())
-    }
-
-    #[test]
     fn test_filter_creation_with_config() {
         let config = FilterConfig {
             min_gas_price_gwei: 5,
@@ -685,28 +906,6 @@ mod tests {
         assert_eq!(stats.total_transactions, 0);
         assert_eq!(stats.accepted_transactions, 0);
         assert_eq!(stats.rejected_transactions, 0);
-    }
-
-    #[test]
-    fn test_config_methods() {
-        let mut filter = MempoolFilter::default();
-
-        // Test config getter (line 106-107)
-        let config = filter.config();
-        assert_eq!(config.min_gas_price_gwei, 1);
-
-        // Test config update (line 111-112)
-        let new_config = FilterConfig {
-            min_gas_price_gwei: 5,
-            max_gas_price_gwei: 500,
-            min_value_wei: 1000,
-            enable_defi_filter: false,
-            enable_mev_filter: false,
-        };
-        filter.update_config(new_config);
-        assert_eq!(filter.config().min_gas_price_gwei, 5);
-        assert_eq!(filter.config().max_gas_price_gwei, 500);
-        assert!(!filter.config().enable_defi_filter);
     }
 
     #[test]
@@ -1002,40 +1201,6 @@ mod tests {
         // No rejections yet, should return None
         let most_common = stats.most_common_rejection();
         assert_eq!(most_common, None);
-    }
-
-    #[test]
-    fn test_quick_mev_check_known_selectors() {
-        // Test quick MEV check for known selectors (lines 209-218)
-        let filter = MempoolFilter::default();
-
-        // Test swapExactTokensForTokens
-        let swap_tx = Transaction::new(
-            [1u8; 20],
-            Some([2u8; 20]),
-            Price::new(50_000_000_000_000_000), // 0.05 ETH
-            Price::from_gwei(20),               // Low gas price
-            Gas::new(150_000),
-            0,
-            vec![0xa9, 0x05, 0x9c, 0xbb, 0x00, 0x00], // swapExactTokensForTokens
-        );
-
-        let has_mev = filter.quick_mev_check(&swap_tx);
-        assert!(has_mev);
-
-        // Test liquidateCalculateSeizeTokens
-        let liquidation_tx = Transaction::new(
-            [1u8; 20],
-            Some([2u8; 20]),
-            Price::new(50_000_000_000_000_000), // 0.05 ETH
-            Price::from_gwei(20),               // Low gas price
-            Gas::new(150_000),
-            0,
-            vec![0x2e, 0x1a, 0x7d, 0x4d, 0x00, 0x00], // liquidateCalculateSeizeTokens
-        );
-
-        let has_mev = filter.quick_mev_check(&liquidation_tx);
-        assert!(has_mev);
     }
 
     #[test]

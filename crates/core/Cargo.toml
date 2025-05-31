@@ -17,6 +17,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 chrono = { workspace = true }
+fastrand = { workspace = true }
 # jemallocator = { workspace = true }  # Disabled on Windows
 
 # Core-specific dependencies
@@ -43,6 +44,10 @@ harness = false
 
 [[bench]]
 name = "mempool_bench"
+harness = false
+
+[[bench]]
+name = "memory_bench"
 harness = false
 
 [features]
