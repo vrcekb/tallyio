@@ -203,9 +203,26 @@ jobs:
       
     - name: 🔒 Install Cargo Audit
       run: cargo install cargo-audit
-      
+
+    - name: 📦 Install jq for JSON parsing
+      run: sudo apt-get update && sudo apt-get install -y jq
+
     - name: 🔍 Run Security Audit
-      run: cargo audit
+      run: |
+        cargo audit --json > audit-report.json
+        # Check if vulnerabilities were found
+        VULN_COUNT=$(jq -r '.vulnerabilities.count // 0' audit-report.json)
+        VULN_FOUND=$(jq -r '.vulnerabilities.found // false' audit-report.json)
+
+        if [ "$VULN_FOUND" = "true" ] || [ "$VULN_COUNT" -gt 0 ]; then
+          echo "🚨 Security vulnerabilities found!"
+          cat audit-report.json
+          exit 1
+        else
+          echo "✅ No security vulnerabilities found"
+          echo "📊 Audit summary:"
+          jq -r '.vulnerabilities' audit-report.json
+        fi
       
     - name: 🔒 Install Cargo Deny
       run: cargo install cargo-deny
