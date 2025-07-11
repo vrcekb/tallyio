@@ -1,0 +1,242 @@
+# TallyIO .gitignore - Ultra-Performance MEV Platform
+
+# ============================================================================
+# RUST BUILD ARTIFACTS
+# ============================================================================
+/target/
+**/target/
+Cargo.lock
+
+# ============================================================================
+# RUST DEVELOPMENT
+# ============================================================================
+**/*.rs.bk
+*.pdb
+
+# ============================================================================
+# IDE AND EDITOR FILES
+# ============================================================================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA / CLion
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ============================================================================
+# OPERATING SYSTEM FILES
+# ============================================================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================================================
+# PERFORMANCE AND PROFILING
+# ============================================================================
+# Criterion benchmarks
+/target/criterion/
+**/target/criterion/
+
+# Flamegraph profiling
+flamegraph.svg
+perf.data*
+
+# Valgrind
+*.valgrind
+callgrind.out.*
+massif.out.*
+
+# ============================================================================
+# SECURITY AND SECRETS
+# ============================================================================
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Private keys and certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Configuration files with secrets
+config/production.toml
+config/staging.toml
+secrets/
+
+# ============================================================================
+# LOGS AND TEMPORARY FILES
+# ============================================================================
+# Log files
+*.log
+logs/
+log/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# ============================================================================
+# DOCUMENTATION BUILD
+# ============================================================================
+# mdBook
+book/
+/docs/book/
+
+# Sphinx
+_build/
+.doctrees/
+
+# ============================================================================
+# TESTING AND COVERAGE
+# ============================================================================
+# Coverage reports
+/target/llvm-cov-target/
+lcov.info
+*.profraw
+*.profdata
+
+# Test artifacts
+test-results/
+test-output/
+
+# ============================================================================
+# DEPLOYMENT AND DISTRIBUTION
+# ============================================================================
+# Docker
+.dockerignore
+Dockerfile.prod
+
+# Kubernetes
+k8s/secrets/
+*.kubeconfig
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+
+# ============================================================================
+# MEV AND BLOCKCHAIN SPECIFIC
+# ============================================================================
+# Private blockchain data
+blockchain-data/
+node-data/
+keystore/
+
+# MEV strategy configurations
+strategies/private/
+mev-configs/production/
+
+# Trading data
+trading-data/
+market-data/cache/
+
+# ============================================================================
+# PERFORMANCE OPTIMIZATION
+# ============================================================================
+# AMD EPYC specific builds
+/target/x86_64-unknown-linux-gnu/
+/target/x86_64-unknown-linux-musl/
+
+# SIMD optimization artifacts
+*.s
+*.asm
+
+# ============================================================================
+# CI/CD ARTIFACTS
+# ============================================================================
+# GitHub Actions
+.github/workflows/secrets/
+
+# Build artifacts
+dist/
+release/
+artifacts/
+
+# ============================================================================
+# DEVELOPMENT TOOLS
+# ============================================================================
+# Rust analyzer
+rust-project.json
+
+# Clippy cache
+.clippy.toml
+
+# Rustfmt backup
+*.rs.fmt
+
+# ============================================================================
+# PROJECT SPECIFIC
+# ============================================================================
+# TallyIO specific ignores
+tallyio-data/
+mev-logs/
+arbitrage-cache/
+liquidation-data/
+
+# Performance test results
+benchmark-results/
+latency-tests/
+
+# Production configurations
+production.toml
+hetzner.toml

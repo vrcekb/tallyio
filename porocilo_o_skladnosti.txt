@@ -1,0 +1,44 @@
+TallyIO Skladnostni Preizkus - Poročilo
+='*'*50
+Najdenih 19 kršitev v 1 datotekah.
+
+--- Datoteka: crates\hot_path\build.rs ---
+  - Vrstica 98: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: println!("cargo:rustc-cfg=feature=\"{feature}\"");
+  - Vrstica 140: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("//! Generated CPU feature detection code\n\n");
+  - Vrstica 141: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("use core::sync::atomic::{AtomicBool, Ordering};\n\n");
+  - Vrstica 155: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("\n/// Initialize CPU feature detection\n");
+  - Vrstica 156: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("pub fn init_cpu_features() {\n");
+  - Vrstica 162: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: "    #[cfg(target_arch = \"x86_64\")]\n    {{\n        if is_x86_feature_detected!(\"{feature}\") {{\n            HAS_{}.store(true, Ordering::Relaxed);\n        }}\n    }}",
+  - Vrstica 170: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("}\n\n");
+  - Vrstica 176: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: "/// Check if {} is available\n#[inline(always)]\npub fn has_{feature}() -> bool {{\n    HAS_{}.load(Ordering::Relaxed)\n}}",
+  - Vrstica 190: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("/// Select optimal implementation based on CPU features\n");
+  - Vrstica 191: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("#[inline(always)]\n");
+  - Vrstica 192: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("pub fn select_optimal_impl() -> &'static str {\n");
+  - Vrstica 193: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("    if has_avx512f() && has_avx512vl() {\n");
+  - Vrstica 194: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("        \"avx512\"\n");
+  - Vrstica 195: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("    } else if has_avx2() {\n");
+  - Vrstica 196: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("        \"avx2\"\n");
+  - Vrstica 197: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("    } else {\n");
+  - Vrstica 198: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("        \"scalar\"\n");
+  - Vrstica 199: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("    }\n");
+  - Vrstica 200: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
+    | Koda: code.push_str("}\n");
+

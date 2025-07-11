@@ -1,0 +1,144 @@
+[workspace]
+resolver = "2"
+
+# TallyIO Ultra-Performance Financial Application Workspace
+# Optimized for MEV detection <500ns, cross-chain ops <50ns
+members = [
+    "crates/strategy_core",
+    "crates/hot_path",
+]
+
+# Workspace-wide dependencies for consistency
+[workspace.dependencies]
+# Core async runtime
+tokio = { version = "1.35", features = ["full", "rt-multi-thread", "macros", "time", "sync", "fs", "net", "io-util", "parking_lot"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Financial calculations (no floating point!)
+rust_decimal = { version = "1.33", features = ["serde-with-str", "maths"] }
+
+# High-performance collections
+ahash = "0.8"
+dashmap = "5.5"
+crossbeam = "0.8"
+
+# Cryptography
+sha3 = "0.10"
+secp256k1 = { version = "0.28", features = ["recovery", "global-context"] }
+
+# Networking
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+
+# Logging and tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Configuration
+config = "0.14"
+
+# Testing
+criterion = { version = "0.5", features = ["html_reports"] }
+
+# Workspace-wide optimization profile
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+overflow-checks = false
+
+# Ultra-aggressive optimization for production
+[profile.production]
+inherits = "release"
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+overflow-checks = false
+debug = false
+
+# Development profile optimized for fast compilation
+[profile.dev]
+opt-level = 0
+debug = true
+overflow-checks = true
+
+# Test profile with optimizations for benchmarks
+[profile.test]
+opt-level = 2
+debug = true
+
+# Benchmark profile for maximum performance
+[profile.bench]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+debug = false
+
+# Workspace-wide features
+[workspace.metadata]
+rust-version = "1.75"
+edition = "2021"
+
+# Ultra-strict clippy configuration for financial application
+[workspace.lints.clippy]
+# Absolutely forbidden - will cause compilation failure
+unwrap_used = "forbid"
+expect_used = "forbid" 
+panic = "forbid"
+todo = "forbid"
+unimplemented = "forbid"
+unreachable = "forbid"
+
+# Performance critical
+indexing_slicing = "deny"
+integer_division = "deny"
+arithmetic_side_effects = "deny"
+float_arithmetic = "deny"
+modulo_arithmetic = "deny"
+
+# Memory safety
+mem_forget = "deny"
+rc_mutex = "deny"
+
+# Async safety
+await_holding_lock = "deny"
+await_holding_refcell_ref = "deny"
+
+# Code quality
+let_underscore_must_use = "deny"
+let_underscore_untyped = "deny"
+must_use_candidate = "warn"
+missing_asserts_for_indexing = "deny"
+
+# String handling
+string_slice = "deny"
+str_to_string = "warn"
+
+# Safety
+unnecessary_safety_comment = "deny"
+unnecessary_safety_doc = "deny"
+undocumented_unsafe_blocks = "deny"
+
+# Performance
+clone_on_ref_ptr = "deny"
+manual_let_else = "warn"
+
+# Allowed for workspace convenience
+missing_docs_in_private_items = "allow"
+module_name_repetitions = "allow"
+missing_trait_methods = "allow"
+wildcard_imports = "allow"
+redundant_pub_crate = "allow"

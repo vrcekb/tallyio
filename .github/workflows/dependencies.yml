@@ -1,0 +1,275 @@
+name: TallyIO Dependency Management
+
+on:
+  schedule:
+    # Run every Monday at 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+  push:
+    paths:
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ============================================================================
+  # DEPENDENCY AUDIT
+  # ============================================================================
+  dependency-audit:
+    name: 🔍 Dependency Security Audit
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🦀 Setup Rust Toolchain
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: 📦 Cache Cargo Dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-audit-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: 🔒 Install Cargo Audit
+      run: cargo install cargo-audit
+      
+    - name: 🔍 Run Security Audit
+      run: cargo audit --json > audit-report.json
+      continue-on-error: true
+      
+    - name: 📊 Parse Audit Results
+      run: |
+        if [ -s audit-report.json ]; then
+          echo "🚨 Security vulnerabilities found!"
+          cat audit-report.json
+          exit 1
+        else
+          echo "✅ No security vulnerabilities found"
+        fi
+        
+    - name: 📤 Upload Audit Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-audit-report
+        path: audit-report.json
+        retention-days: 30
+
+  # ============================================================================
+  # DEPENDENCY UPDATES
+  # ============================================================================
+  dependency-update:
+    name: 📦 Dependency Updates
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    needs: dependency-audit
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: 🦀 Setup Rust Toolchain
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: 📦 Install Cargo Edit
+      run: cargo install cargo-edit
+      
+    - name: 🔄 Update Dependencies
+      run: |
+        echo "📦 Updating dependencies..."
+        cargo update --verbose
+        
+    - name: 🧪 Test Updated Dependencies
+      run: |
+        echo "🧪 Testing with updated dependencies..."
+        cargo test --workspace --verbose
+        
+    - name: 🔍 Run Clippy with Updates
+      run: |
+        echo "🔍 Running clippy with updated dependencies..."
+        cargo clippy --workspace -- -D warnings
+        
+    - name: 📝 Generate Update Report
+      run: |
+        echo "📝 Generating dependency update report..."
+        git diff --name-only > changed-files.txt
+        if [ -s changed-files.txt ]; then
+          echo "📦 Dependencies updated:"
+          cat changed-files.txt
+          
+          echo "## Dependency Update Report" > update-report.md
+          echo "" >> update-report.md
+          echo "### Changed Files:" >> update-report.md
+          cat changed-files.txt >> update-report.md
+          echo "" >> update-report.md
+          echo "### Cargo.lock Changes:" >> update-report.md
+          echo '```diff' >> update-report.md
+          git diff Cargo.lock >> update-report.md
+          echo '```' >> update-report.md
+        else
+          echo "✅ No dependency updates needed"
+        fi
+        
+    - name: 🔄 Create Pull Request
+      if: success()
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "📦 Update dependencies"
+        title: "📦 Automated Dependency Updates"
+        body-path: update-report.md
+        branch: dependency-updates
+        delete-branch: true
+        labels: |
+          dependencies
+          automated
+
+  # ============================================================================
+  # DEPENDENCY VULNERABILITY SCAN
+  # ============================================================================
+  vulnerability-scan:
+    name: 🛡️ Vulnerability Scan
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🦀 Setup Rust Toolchain
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: 🔒 Install Cargo Deny
+      run: cargo install cargo-deny
+      
+    - name: 🛡️ Run Vulnerability Scan
+      run: |
+        echo "🛡️ Scanning for vulnerabilities..."
+        cargo deny check advisories --format json > vulnerability-report.json
+        
+    - name: 📊 Process Vulnerability Report
+      run: |
+        if [ -s vulnerability-report.json ]; then
+          echo "🚨 Vulnerabilities detected!"
+          cat vulnerability-report.json
+          
+          # Create GitHub issue for vulnerabilities
+          echo "Creating GitHub issue for vulnerabilities..."
+        else
+          echo "✅ No vulnerabilities found"
+        fi
+        
+    - name: 📤 Upload Vulnerability Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: vulnerability-report
+        path: vulnerability-report.json
+        retention-days: 30
+
+  # ============================================================================
+  # LICENSE COMPLIANCE CHECK
+  # ============================================================================
+  license-check:
+    name: ⚖️ License Compliance
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🦀 Setup Rust Toolchain
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: 🔒 Install Cargo Deny
+      run: cargo install cargo-deny
+      
+    - name: ⚖️ Check License Compliance
+      run: |
+        echo "⚖️ Checking license compliance..."
+        cargo deny check licenses --format json > license-report.json
+        
+    - name: 📊 Process License Report
+      run: |
+        if [ -s license-report.json ]; then
+          echo "📋 License compliance report:"
+          cat license-report.json
+        else
+          echo "✅ All licenses compliant"
+        fi
+        
+    - name: 📤 Upload License Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: license-report
+        path: license-report.json
+        retention-days: 30
+
+  # ============================================================================
+  # DEPENDENCY SUMMARY
+  # ============================================================================
+  dependency-summary:
+    name: 📋 Dependency Summary
+    runs-on: ubuntu-22.04
+    needs: [dependency-audit, vulnerability-scan, license-check]
+    if: always()
+    timeout-minutes: 10
+    
+    steps:
+    - name: 📥 Download All Reports
+      uses: actions/download-artifact@v4
+      
+    - name: 📋 Generate Summary Report
+      run: |
+        echo "# TallyIO Dependency Management Summary" > summary.md
+        echo "" >> summary.md
+        echo "## 🔍 Security Audit" >> summary.md
+        if [ -f security-audit-report/audit-report.json ]; then
+          echo "✅ Security audit completed" >> summary.md
+        else
+          echo "❌ Security audit failed" >> summary.md
+        fi
+        echo "" >> summary.md
+        
+        echo "## 🛡️ Vulnerability Scan" >> summary.md
+        if [ -f vulnerability-report/vulnerability-report.json ]; then
+          echo "✅ Vulnerability scan completed" >> summary.md
+        else
+          echo "❌ Vulnerability scan failed" >> summary.md
+        fi
+        echo "" >> summary.md
+        
+        echo "## ⚖️ License Compliance" >> summary.md
+        if [ -f license-report/license-report.json ]; then
+          echo "✅ License compliance checked" >> summary.md
+        else
+          echo "❌ License compliance check failed" >> summary.md
+        fi
+        echo "" >> summary.md
+        
+        echo "## 🎯 TallyIO Status" >> summary.md
+        echo "🚀 Ready for ultra-performance MEV operations!" >> summary.md
+        
+        cat summary.md
+        
+    - name: 📤 Upload Summary
+      uses: actions/upload-artifact@v4
+      with:
+        name: dependency-summary
+        path: summary.md
+        retention-days: 30
