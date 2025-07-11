@@ -4,10 +4,6 @@
 
 use crate::{Result, types::{MarketSnapshot, TradingPair, Opportunity, get_timestamp_ns, ExecutionParams, AlignedPrice}};
 
-#[cfg(feature = "std")]
-use std::vec::Vec;
-
-#[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 
 /// MEV detection engine

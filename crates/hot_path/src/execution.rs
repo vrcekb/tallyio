@@ -4,10 +4,6 @@
 
 use crate::{Result, types::{Opportunity, get_timestamp_ns, ExecutionParams}};
 
-#[cfg(feature = "std")]
-use std::{borrow::ToOwned, vec::Vec};
-
-#[cfg(not(feature = "std"))]
 use alloc::{borrow::ToOwned, vec::Vec};
 
 /// Transaction execution engine
