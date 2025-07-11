@@ -2,9 +2,9 @@ name: TallyIO CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
   schedule:
     # Run daily at 02:00 UTC for dependency updates
     - cron: '0 2 * * *'
@@ -307,7 +307,7 @@ jobs:
     name: 🚀 Deployment Readiness
     runs-on: ubuntu-22.04
     needs: [clippy, test, benchmark, security, coverage, build]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
     steps:
     - name: ✅ All Checks Passed
