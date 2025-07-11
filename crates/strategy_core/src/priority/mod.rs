@@ -36,7 +36,7 @@ pub enum PriorityError {
 #[non_exhaustive]
 pub struct PriorityCoordinator {
     /// Configuration
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "Field will be used in future implementations")]
 
     /// Configuration
     config: PriorityConfig,

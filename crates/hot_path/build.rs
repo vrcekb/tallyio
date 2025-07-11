@@ -3,6 +3,11 @@
 //! This build script detects CPU features at compile time and enables
 //! appropriate optimizations for AMD EPYC 9454P processors.
 
+#![expect(
+    clippy::blanket_clippy_restriction_lints,
+    reason = "Ultra-strict clippy profile requires individual restriction lints"
+)]
+
 use core::fmt::Write as _;
 use std::env;
 use std::fs;

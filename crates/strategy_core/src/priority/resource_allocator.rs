@@ -44,20 +44,20 @@ impl ResourceAllocator {
     /// Returns error if operation fails
     pub fn allocate_resources(&self, priority: StrategyPriority, _expected_profit: ProfitAmount) -> StrategyResult<ResourceAllocation> {
         let (cpu_ratio, memory_ratio) = match priority {
-            StrategyPriority::Critical => (0.5, 0.4), // 50% CPU, 40% memory
-            StrategyPriority::High => (0.3, 0.3),     // 30% CPU, 30% memory
-            StrategyPriority::Medium => (0.15, 0.2),  // 15% CPU, 20% memory
-            StrategyPriority::Low => (0.05, 0.1),     // 5% CPU, 10% memory
-            StrategyPriority::Background => (0.02, 0.05), // 2% CPU, 5% memory
+            StrategyPriority::Critical => (0.5_f64, 0.4_f64), // 50% CPU, 40% memory
+            StrategyPriority::High => (0.3_f64, 0.3_f64),     // 30% CPU, 30% memory
+            StrategyPriority::Medium => (0.15_f64, 0.2_f64),  // 15% CPU, 20% memory
+            StrategyPriority::Low => (0.05_f64, 0.1_f64),     // 5% CPU, 10% memory
+            StrategyPriority::Background => (0.02_f64, 0.05_f64), // 2% CPU, 5% memory
         };
         
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, clippy::float_arithmetic)]
+        #[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss, clippy::float_arithmetic, reason = "Resource allocation requires float arithmetic and safe casting")]
 
         
         let cpu_cores = ((f64::from(self.total_cpu_cores)) * cpu_ratio).max(1.0) as u32;
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, clippy::float_arithmetic)]
+        #[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss, clippy::float_arithmetic, reason = "Resource allocation requires float arithmetic and safe casting")]
 
-        #[allow(clippy::cast_precision_loss)]
+        #[expect(clippy::cast_precision_loss, reason = "Precision loss acceptable for resource allocation ratios")]
 
 
         let memory_mb = ((self.total_memory_mb as f64) * memory_ratio).max(100.0) as u64;

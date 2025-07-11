@@ -72,7 +72,7 @@ pub struct ArbitrageOpportunity {
 #[non_exhaustive]
 pub struct ArbitrageCoordinator {
     /// Configuration
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "Field will be used in future implementations")]
 
     /// Configuration
     config: ArbitrageConfig,
@@ -142,7 +142,7 @@ impl ArbitrageCoordinator {
 #[non_exhaustive]
 pub struct DexArbitrageExecutor {
     /// Minimum profit threshold
-    #[allow(dead_code)]
+
 
     /// Minimum profit threshold
     min_profit: Decimal,
@@ -154,6 +154,13 @@ impl DexArbitrageExecutor {
     #[must_use]
     pub const fn new(min_profit: Decimal) -> Self {
         Self { min_profit }
+    }
+
+    /// Get minimum profit threshold
+    #[must_use]
+    #[inline]
+    pub const fn min_profit(&self) -> Decimal {
+        self.min_profit
     }
     
     /// Execute DEX arbitrage opportunity

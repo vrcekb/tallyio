@@ -4,6 +4,7 @@
 
 use crate::{StrategyResult, StrategyPriority, types::*};
 use std::collections::BinaryHeap;
+use core::cmp::Ordering;
 
 /// Execution queue item
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -20,13 +21,15 @@ pub struct QueueItem {
 }
 
 impl PartialOrd for QueueItem {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    #[inline]
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl Ord for QueueItem {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    #[inline]
+    fn cmp(&self, other: &Self) -> Ordering {
         // Higher priority (lower number) comes first
         other.priority.cmp(&self.priority)
             .then_with(|| self.expected_profit.cmp(&other.expected_profit))

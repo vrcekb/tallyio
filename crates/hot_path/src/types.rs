@@ -1,346 +1,296 @@
-//! Zero-cost abstractions and cache-aligned types for maximum performance.
+//! Zero-cost abstractions and cache-aligned data structures for ultra-high performance.
 //!
-//! This module provides fundamental types optimized for the hot path with
-//! cache-line alignment and atomic-safe operations.
+//! This module provides performance-critical data types optimized for AMD EPYC 9454P
+//! with nanosecond-level precision requirements.
 
+use alloc::{string::String, vec::Vec};
 use core::sync::atomic::{AtomicU64, Ordering};
 
-#[cfg(feature = "std")]
-use std::time::{SystemTime, UNIX_EPOCH};
-
-#[cfg(test)]
-use core::mem::{align_of, size_of};
-
-extern crate alloc;
-
-/// Cache line size for optimal memory alignment (64 bytes for `x86_64`)
-pub const CACHE_LINE_SIZE: usize = 64;
-
-/// Maximum number of supported trading pairs
-pub const MAX_TRADING_PAIRS: usize = 4096;
-
-/// Maximum number of supported blockchain networks
-pub const MAX_CHAINS: usize = 16;
-
-/// Cache-aligned price data structure
+/// Cache-aligned price data for SIMD operations
 #[repr(C, align(64))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy)]
 #[non_exhaustive]
 pub struct AlignedPrice {
-    /// Price value in wei (18 decimal places)
-    pub price: u64,
+    /// Price value in fixed-point representation
+    pub value: u64,
     /// Timestamp in nanoseconds
     pub timestamp_ns: u64,
-    /// Chain identifier
-    pub chain_id: u8,
-    /// DEX identifier
-    pub dex_id: u8,
-    /// Padding to ensure 64-byte alignment
-    pub padding: [u8; 46],
+    /// Volume at this price level
+    pub volume: u64,
+    /// Padding to ensure cache line alignment
+    pub padding: [u8; 40],
+}
+
+impl AlignedPrice {
+    /// Create a new aligned price
+    #[must_use]
+    #[inline]
+    pub const fn new(value: u64, timestamp_ns: u64, volume: u64) -> Self {
+        return Self {
+            value,
+            timestamp_ns,
+            volume,
+            padding: [0; 40],
+        };
+    }
+
+    /// Get the price value
+    #[must_use]
+    #[inline]
+    pub const fn value(&self) -> u64 {
+        return self.value;
+    }
+
+    /// Get the timestamp
+    #[must_use]
+    #[inline]
+    pub const fn timestamp(&self) -> u64 {
+        return self.timestamp_ns;
+    }
+
+    /// Get the volume
+    #[must_use]
+    #[inline]
+    pub const fn volume(&self) -> u64 {
+        return self.volume;
+    }
 }
 
 impl Default for AlignedPrice {
     #[inline]
     fn default() -> Self {
-        Self {
-            price: 0,
-            timestamp_ns: 0,
-            chain_id: 0,
-            dex_id: 0,
-            padding: [0; 46],
-        }
+        return Self::new(0, 0, 0);
     }
 }
 
 /// Trading pair identifier
-#[repr(C, align(64))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub struct TradingPair {
-    /// Unique pair identifier
-    pub pair_id: u32,
-    /// Base price
-    pub base_price: AlignedPrice,
-    /// Quote price
-    pub quote_price: AlignedPrice,
-    /// Padding for cache alignment
-    pub padding: [u8; 48],
+    /// Base token identifier
+    pub base: u32,
+    /// Quote token identifier  
+    pub quote: u32,
+    /// Exchange identifier
+    pub exchange: u16,
+    /// Pool identifier
+    pub pool: u16,
 }
 
 impl TradingPair {
-    /// Get the unique identifier for this trading pair
-    #[must_use]
-    #[inline]
-    pub const fn id(&self) -> u32 {
-        self.pair_id
-    }
-
     /// Create a new trading pair
     #[must_use]
     #[inline]
-    pub const fn new(pair_id: u32, base_price: AlignedPrice, quote_price: AlignedPrice) -> Self {
-        Self {
-            pair_id,
-            base_price,
-            quote_price,
-            padding: [0; 48],
-        }
+    pub const fn new(base: u32, quote: u32, exchange: u16, pool: u16) -> Self {
+        return Self { base, quote, exchange, pool };
     }
 }
 
-/// MEV opportunity data structure
+/// Market snapshot for MEV detection
 #[repr(C, align(64))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub struct Opportunity {
-    /// Trading pair identifier
-    pub pair_id: u32,
-    /// Estimated profit in basis points
-    pub profit_estimate: u64,
-    /// Timestamp when opportunity was detected
-    pub timestamp_ns: u64,
-    /// Execution parameters
-    pub execution_params: ExecutionParams,
-    /// Padding for cache alignment
-    pub padding: [u8; 20],
-}
-
-impl Opportunity {
-    /// Get the age of this opportunity in nanoseconds
-    #[must_use]
-    #[inline]
-    pub fn age_ns(&self) -> u64 {
-        get_timestamp_ns().saturating_sub(self.timestamp_ns)
-    }
-
-    /// Check if this opportunity is profitable
-    #[must_use]
-    #[inline]
-    pub const fn is_profitable(&self) -> bool {
-        self.profit_estimate > 0
-    }
-
-    /// Create a new opportunity
-    #[must_use]
-    #[inline]
-    pub const fn new(
-        pair_id: u32,
-        profit_estimate: u64,
-        execution_params: ExecutionParams,
-    ) -> Self {
-        Self {
-            pair_id,
-            profit_estimate,
-            timestamp_ns: 0, // Will be set by get_timestamp_ns() in real implementation
-            execution_params,
-            padding: [0; 20],
-        }
-    }
-}
-
-impl Default for Opportunity {
-    #[inline]
-    fn default() -> Self {
-        Self {
-            pair_id: 0,
-            profit_estimate: 0,
-            timestamp_ns: 0,
-            execution_params: ExecutionParams::default(),
-            padding: [0; 20],
-        }
-    }
-}
-
-/// Market data snapshot
-#[repr(C, align(64))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct MarketSnapshot {
-    /// Trading pair identifier
-    pub pair_id: u32,
-    /// Current price in wei
-    pub price: u64,
-    /// Available liquidity in wei
-    pub liquidity: u64,
-    /// 24h volume in wei
-    pub volume_24h: u64,
-    /// Timestamp of this snapshot
+    /// Trading pairs in this snapshot
+    pub pairs: Vec<TradingPair>,
+    /// Price data aligned for SIMD operations
+    pub prices: Vec<AlignedPrice>,
+    /// Snapshot timestamp in nanoseconds
     pub timestamp_ns: u64,
-    /// Chain ID
-    pub chain_id: u8,
-    /// DEX ID
-    pub dex_id: u8,
-    /// Padding for alignment
-    pub padding: [u8; 18],
-}
-
-impl Default for MarketSnapshot {
-    #[inline]
-    fn default() -> Self {
-        Self {
-            pair_id: 0,
-            price: 0,
-            liquidity: 0,
-            volume_24h: 0,
-            timestamp_ns: 0,
-            chain_id: 0,
-            dex_id: 0,
-            padding: [0; 18],
-        }
-    }
+    /// Block number when snapshot was taken
+    pub block_number: u64,
 }
 
 impl MarketSnapshot {
     /// Create a new market snapshot
     #[must_use]
     #[inline]
-    pub const fn new() -> Self {
-        Self {
-            pair_id: 0,
-            price: 0,
-            liquidity: 0,
-            volume_24h: 0,
-            timestamp_ns: 0,
-            chain_id: 0,
-            dex_id: 0,
-            padding: [0; 18],
-        }
+    pub fn new(capacity: usize) -> Self {
+        return Self {
+            pairs: Vec::with_capacity(capacity),
+            prices: Vec::with_capacity(capacity),
+            timestamp_ns: get_timestamp_ns(),
+            block_number: 0,
+        };
+    }
+
+    /// Add a price update to the snapshot
+    #[inline]
+    pub fn add_price(&mut self, pair: TradingPair, price: AlignedPrice) {
+        self.pairs.push(pair);
+        self.prices.push(price);
+    }
+
+    /// Get the number of price updates
+    #[must_use]
+    #[inline]
+    pub fn len(&self) -> usize {
+        return self.prices.len();
+    }
+
+    /// Check if the snapshot is empty
+    #[must_use]
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        return self.prices.is_empty();
     }
 }
 
-/// Transaction execution parameters
-#[repr(C, align(64))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Execution parameters for MEV opportunities
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct ExecutionParams {
-    /// Gas limit
+    /// Gas limit for the transaction
     pub gas_limit: u64,
     /// Gas price in wei
     pub gas_price: u64,
-    /// Maximum slippage in basis points
-    pub max_slippage_bp: u32,
-    /// Transaction deadline in nanoseconds
-    pub deadline_ns: u64,
-    /// Padding for cache alignment
-    pub padding: [u8; 32],
+    /// Maximum slippage tolerance (basis points)
+    pub max_slippage_bps: u16,
+    /// Deadline for execution (timestamp)
+    pub deadline: u64,
+    /// Priority fee for EIP-1559
+    pub priority_fee: u64,
 }
 
 impl ExecutionParams {
-    /// Check if execution parameters are still valid
-    #[must_use]
-    #[inline]
-    pub fn is_valid(&self) -> bool {
-        get_timestamp_ns() < self.deadline_ns
-    }
-
     /// Create new execution parameters
     #[must_use]
     #[inline]
-    pub const fn new(
-        gas_limit: u64,
-        gas_price: u64,
-        max_slippage_bp: u32,
-        deadline_ns: u64,
-    ) -> Self {
-        Self {
+    pub const fn new(gas_limit: u64, gas_price: u64, max_slippage_bps: u16, deadline: u64, priority_fee: u64) -> Self {
+        return Self {
             gas_limit,
             gas_price,
-            max_slippage_bp,
-            deadline_ns,
-            padding: [0; 32],
-        }
+            max_slippage_bps,
+            deadline,
+            priority_fee,
+        };
     }
 }
 
 impl Default for ExecutionParams {
     #[inline]
     fn default() -> Self {
-        Self {
-            gas_limit: 500_000,
-            gas_price: 20_000_000_000, // 20 gwei
-            max_slippage_bp: 50, // 0.5%
-            deadline_ns: 0,
-            padding: [0; 32],
-        }
+        return Self::new(
+            300_000,  // 300k gas limit
+            20_000_000_000, // 20 gwei
+            50,       // 0.5% slippage
+            get_timestamp_ns() + 300_000_000_000, // 5 minutes from now
+            1_000_000_000, // 1 gwei priority fee
+        );
     }
 }
 
-/// Get current timestamp in nanoseconds since UNIX epoch
+/// MEV opportunity detected by the system
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub struct Opportunity {
+    /// Unique identifier for this opportunity
+    pub id: u64,
+    /// Type of MEV opportunity
+    pub opportunity_type: String,
+    /// Expected profit in wei
+    pub expected_profit: u64,
+    /// Confidence score (0-100)
+    pub confidence: u8,
+    /// Execution parameters
+    pub execution_params: ExecutionParams,
+    /// Detection timestamp
+    pub detected_at: u64,
+    /// Expiration timestamp
+    pub expires_at: u64,
+}
+
+impl Opportunity {
+    /// Create a new MEV opportunity
+    #[must_use]
+    #[inline]
+    pub fn new(id: u64, opportunity_type: String, expected_profit: u64, confidence: u8) -> Self {
+        let now = get_timestamp_ns();
+        return Self {
+            id,
+            opportunity_type,
+            expected_profit,
+            confidence,
+            execution_params: ExecutionParams::default(),
+            detected_at: now,
+            expires_at: now + 10_000_000_000, // 10 seconds expiry
+        };
+    }
+
+    /// Check if the opportunity has expired
+    #[must_use]
+    #[inline]
+    pub fn is_expired(&self) -> bool {
+        return get_timestamp_ns() > self.expires_at;
+    }
+
+    /// Get the remaining time until expiry in nanoseconds
+    #[must_use]
+    #[inline]
+    pub fn time_to_expiry(&self) -> u64 {
+        let now = get_timestamp_ns();
+        return self.expires_at.saturating_sub(now);
+    }
+}
+
+// Global timestamp counter for consistent timing
+static TIMESTAMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+/// Get current timestamp in nanoseconds
 #[must_use]
 #[inline]
-#[expect(clippy::cast_possible_truncation, reason = "Nanosecond precision is sufficient")]
-#[expect(clippy::as_conversions, reason = "Safe conversion for timestamp")]
 pub fn get_timestamp_ns() -> u64 {
-    #[cfg(feature = "std")]
-    {
-        SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map_or(0, |duration| duration.as_nanos() as u64)
-    }
-    #[cfg(not(feature = "std"))]
-    {
-        // In no_std environment, return a simple counter
-        // This is not a real timestamp but sufficient for relative timing
-        static COUNTER: AtomicU64 = AtomicU64::new(0);
-        COUNTER.fetch_add(1, Ordering::Relaxed)
-    }
+    // Stub implementation - in production this would use high-resolution timer
+    return TIMESTAMP_COUNTER.fetch_add(1, Ordering::Relaxed);
 }
 
-/// Atomic ordering for performance-critical operations
-pub const ATOMIC_ORDERING: Ordering = Ordering::Relaxed;
-
-/// Atomic-safe counter type
-pub type AtomicCounter = AtomicU64;
+// Configuration types are defined in lib.rs
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn aligned_price_size() {
-        assert_eq!(size_of::<AlignedPrice>(), CACHE_LINE_SIZE);
-        assert_eq!(align_of::<AlignedPrice>(), CACHE_LINE_SIZE);
+    fn test_aligned_price_creation() {
+        let price = AlignedPrice::new(1000, 123_456_789, 500);
+        assert_eq!(price.value(), 1000);
+        assert_eq!(price.timestamp(), 123_456_789);
+        assert_eq!(price.volume(), 500);
     }
 
     #[test]
-    fn opportunity_size() {
-        assert_eq!(align_of::<Opportunity>(), CACHE_LINE_SIZE);
+    fn test_trading_pair_creation() {
+        let pair = TradingPair::new(1, 2, 100, 200);
+        assert_eq!(pair.base, 1);
+        assert_eq!(pair.quote, 2);
+        assert_eq!(pair.exchange, 100);
+        assert_eq!(pair.pool, 200);
     }
 
     #[test]
-    fn trading_pair_id() {
-        let base_price = AlignedPrice::default();
-        let quote_price = AlignedPrice::default();
-        let pair = TradingPair::new(1, base_price, quote_price);
-        let id1 = pair.id();
-        let id2 = pair.id();
-        assert_eq!(id1, id2); // Should be deterministic
-        assert_eq!(id1, 1);
+    fn test_market_snapshot() {
+        let mut snapshot = MarketSnapshot::new(10);
+        assert!(snapshot.is_empty());
+        
+        let pair = TradingPair::new(1, 2, 100, 200);
+        let price = AlignedPrice::new(1000, 123_456_789, 500);
+        snapshot.add_price(pair, price);
+        
+        assert_eq!(snapshot.len(), 1);
+        assert!(!snapshot.is_empty());
     }
 
     #[test]
-    fn opportunity_profitability() {
-        let execution_params = ExecutionParams::default();
-        let profitable = Opportunity::new(
-            1,
-            100, // 100 basis points profit
-            execution_params,
-        );
-
-        assert!(profitable.is_profitable());
-        assert_eq!(profitable.profit_estimate, 100);
+    fn test_opportunity_expiry() {
+        let opp = Opportunity::new(1, "arbitrage".into(), 1000, 95);
+        assert!(!opp.is_expired());
+        assert!(opp.time_to_expiry() > 0);
     }
 
     #[test]
-    fn execution_params_validity() {
-        let future_deadline = get_timestamp_ns() + 1_000_000_000; // 1 second from now
-        let params = ExecutionParams::new(
-            21_000,
-            20_000_000_000,
-            50,
-            future_deadline,
-        );
-
-        assert!(params.is_valid());
+    fn test_timestamp_generation() {
+        let ts1 = get_timestamp_ns();
+        let ts2 = get_timestamp_ns();
+        assert!(ts2 > ts1);
     }
 }

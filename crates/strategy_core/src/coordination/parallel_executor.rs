@@ -9,7 +9,7 @@ use crate::{StrategyResult, ProfitAmount};
 #[non_exhaustive]
 pub struct ParallelExecutor {
     /// Maximum parallel tasks
-    #[allow(dead_code)]
+
 
     /// Maximum parallel tasks
     max_parallel: usize,
@@ -21,6 +21,13 @@ impl ParallelExecutor {
     #[must_use]
     pub const fn new(max_parallel: usize) -> Self {
         Self { max_parallel }
+    }
+
+    /// Get maximum parallel executions
+    #[must_use]
+    #[inline]
+    pub const fn max_parallel(&self) -> usize {
+        self.max_parallel
     }
     
     /// Execute strategies in parallel

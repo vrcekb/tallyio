@@ -36,7 +36,7 @@ pub enum TimeBanditError {
 #[non_exhaustive]
 pub struct TimeBanditCoordinator {
     /// Configuration
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "Field will be used in future implementations")]
 
     /// Configuration
     config: TimeBanditConfig,

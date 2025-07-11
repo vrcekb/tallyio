@@ -24,7 +24,7 @@ pub enum YieldStrategy {
 #[non_exhaustive]
 pub struct YieldOptimizer {
     /// Optimization strategy
-    #[allow(dead_code)]
+
 
     /// Optimization strategy
     strategy: YieldStrategy,
@@ -36,6 +36,13 @@ impl YieldOptimizer {
     #[must_use]
     pub const fn new(strategy: YieldStrategy) -> Self {
         Self { strategy }
+    }
+
+    /// Get yield strategy
+    #[must_use]
+    #[inline]
+    pub const fn strategy(&self) -> YieldStrategy {
+        self.strategy
     }
     
     /// Optimize yield across strategies

@@ -36,7 +36,7 @@ pub enum CoordinationError {
 #[non_exhaustive]
 pub struct CoordinationCoordinator {
     /// Configuration
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "Field will be used in future implementations")]
 
     /// Configuration
     config: CoordinationConfig,

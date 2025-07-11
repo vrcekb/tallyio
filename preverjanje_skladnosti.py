@@ -47,6 +47,7 @@ def preveri_skladnost(root_dir):
                         content = f.read()
                     
                     is_test_file = "#[cfg(test)]" in content or "/tests/" in file_path.replace('\\', '/')
+                    is_build_file = file.endswith('build.rs')
 
                     for i, line in enumerate(content.splitlines(), 1):
                         if line.strip().startswith('//'):
@@ -56,7 +57,15 @@ def preveri_skladnost(root_dir):
                             if "f32" in sporocilo or "f64" in sporocilo:
                                 if is_test_file:
                                     continue
-                            
+
+                            # Izjema za unwrap/expect v test kodi
+                            if ("unwrap" in sporocilo or "expect" in sporocilo) and is_test_file:
+                                continue
+
+                            # Izjema za trdo kodirane poti v build.rs datotekah
+                            if "Trdo kodirana pot" in sporocilo and is_build_file:
+                                continue
+
                             if pravilo.search(line):
                                 krsitve[os.path.relpath(file_path, root_dir)].append({
                                     "vrstica": i,

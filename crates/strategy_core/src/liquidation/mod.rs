@@ -33,6 +33,7 @@ use crate::{StrategyResult, ChainId, ProfitAmount, BlockNumber, Timestamp};
 use rust_decimal::Decimal;
 use thiserror::Error;
 use tokio::sync::{RwLock, mpsc};
+use tokio::time::{sleep, Duration};
 use core::sync::atomic::{AtomicU64, AtomicBool, Ordering};
 use std::sync::Arc;
 use ahash::AHashMap;
@@ -157,6 +158,7 @@ pub enum LiquidationProtocol {
 
 /// Liquidation execution status
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum LiquidationStatus {
     /// Opportunity detected, pending execution
     Pending,
@@ -172,6 +174,7 @@ pub enum LiquidationStatus {
 
 /// Liquidation execution result
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub struct LiquidationResult {
     /// Original opportunity
     pub opportunity: LiquidationOpportunity,
@@ -191,6 +194,7 @@ pub struct LiquidationResult {
 
 /// Liquidation coordinator configuration
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub struct LiquidationConfig {
     /// Minimum health factor threshold for liquidation
     pub min_health_factor: Decimal,
@@ -209,6 +213,7 @@ pub struct LiquidationConfig {
 }
 
 impl Default for LiquidationConfig {
+    #[inline]
     fn default() -> Self {
         Self {
             min_health_factor: Decimal::new(100, 2), // 1.00
@@ -226,7 +231,7 @@ impl Default for LiquidationConfig {
 #[expect(dead_code, reason = "Fields will be used in full implementation")]
 pub struct LiquidationCoordinator {
     /// Configuration
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "Field will be used in future implementations")]
 
     /// Configuration
     config: LiquidationConfig,
@@ -252,6 +257,7 @@ pub struct LiquidationCoordinator {
 
 /// Liquidation statistics
 #[derive(Debug, Default)]
+#[non_exhaustive]
 pub struct LiquidationStats {
     /// Total opportunities detected
     pub opportunities_detected: AtomicU64,
@@ -295,6 +301,7 @@ impl LiquidationCoordinator {
     /// # Errors
     ///
     /// Returns error if operation fails
+    #[inline]
     pub fn new(config: LiquidationConfig) -> StrategyResult<Self> {
         let (opportunity_sender, _opportunity_receiver) = mpsc::unbounded_channel();
         let (_result_sender, result_receiver) = mpsc::unbounded_channel();
@@ -318,7 +325,8 @@ impl LiquidationCoordinator {
     }
     
     /// Register protocol liquidator
-    pub fn register_liquidator<T>(&mut self, protocol: LiquidationProtocol, liquidator: T) 
+    #[inline]
+    pub fn register_liquidator<T>(&mut self, protocol: LiquidationProtocol, liquidator: T)
     where 
         T: ProtocolLiquidator + Send + Sync + 'static 
     {
@@ -334,6 +342,7 @@ impl LiquidationCoordinator {
     /// # Errors
     ///
     /// Returns error if operation fails
+    #[inline]
     pub fn start(&self) -> StrategyResult<()> {
         tracing::info!("Starting liquidation coordinator");
         
@@ -353,6 +362,7 @@ impl LiquidationCoordinator {
     /// # Errors
     ///
     /// Returns error if shutdown process fails    /// Returns error if operation fails
+    #[inline]
     pub async fn stop(&self) -> StrategyResult<()> {
         tracing::info!("Stopping liquidation coordinator");
         
@@ -361,7 +371,7 @@ impl LiquidationCoordinator {
         // Wait for active liquidations to complete
         let mut retries = 0_u32;
         while !self.active_liquidations.read().await.is_empty() && retries < 100 {
-            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+            sleep(Duration::from_millis(100)).await;
             retries = retries.saturating_add(1);
         
         }
@@ -373,6 +383,7 @@ impl LiquidationCoordinator {
     
     /// Get liquidation statistics
     #[must_use]
+    #[inline]
     pub fn get_stats(&self) -> LiquidationStats {
         LiquidationStats {
             opportunities_detected: AtomicU64::new(
@@ -413,12 +424,15 @@ impl LiquidationCoordinator {
 
 // Placeholder structs - will be implemented in separate modules
 /// Health factor monitoring system (placeholder)
+#[non_exhaustive]
 pub struct HealthMonitor;
 
 /// Profit calculation engine (placeholder)
+#[non_exhaustive]
 pub struct ProfitCalculator;
 
 /// Multicall optimization system (placeholder)
+#[non_exhaustive]
 pub struct MulticallOptimizer;
 
 impl HealthMonitor {
