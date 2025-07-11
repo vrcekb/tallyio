@@ -5,6 +5,9 @@
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
+#[cfg(feature = "std")]
+use std::time::{SystemTime, UNIX_EPOCH};
+
 #[cfg(test)]
 use core::mem::{align_of, size_of};
 
@@ -262,13 +265,25 @@ impl Default for ExecutionParams {
     }
 }
 
-/// Get current timestamp in nanoseconds
+/// Get current timestamp in nanoseconds since UNIX epoch
 #[must_use]
 #[inline]
 #[expect(clippy::cast_possible_truncation, reason = "Nanosecond precision is sufficient")]
 #[expect(clippy::as_conversions, reason = "Safe conversion for timestamp")]
 pub fn get_timestamp_ns() -> u64 {
-    instant::Instant::now().elapsed().as_nanos() as u64
+    #[cfg(feature = "std")]
+    {
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_or(0, |duration| duration.as_nanos() as u64)
+    }
+    #[cfg(not(feature = "std"))]
+    {
+        // In no_std environment, return a simple counter
+        // This is not a real timestamp but sufficient for relative timing
+        static COUNTER: AtomicU64 = AtomicU64::new(0);
+        COUNTER.fetch_add(1, Ordering::Relaxed)
+    }
 }
 
 /// Atomic ordering for performance-critical operations

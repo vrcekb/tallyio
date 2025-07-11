@@ -73,8 +73,8 @@ postcard = { version = "1.0", default-features = false, features = ["alloc"] }
 blake3 = { version = "1.5", features = ["std", "rayon"] }
 sha3 = "0.10"
 
-# Time and measurement
-instant = "0.1"
+# Time and measurement using std::time (no external dependencies)
+# Removed instant crate due to unmaintained status
 
 # System information
 num_cpus = "1.16"
@@ -122,7 +122,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 # Cargo settings for maximum performance
 [package.metadata.cargo-udeps.ignore]
-normal = ["instant"]  # Used in benchmarks
+normal = []  # No external time dependencies needed
 
 # Linting configuration
 [lints.rust]

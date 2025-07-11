@@ -4,6 +4,12 @@
 
 use crate::{Result, types::{MarketSnapshot, TradingPair, Opportunity, get_timestamp_ns, ExecutionParams, AlignedPrice}};
 
+#[cfg(feature = "std")]
+use std::vec::Vec;
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+
 /// MEV detection engine
 #[repr(C, align(64))]
 pub struct MevDetector {
@@ -33,8 +39,8 @@ impl MevDetector {
     ///
     /// Returns an error if market data is invalid
     #[inline]
-    pub fn scan_opportunities(&mut self, pairs: &[TradingPair]) -> Result<alloc::vec::Vec<Opportunity>> {
-        let mut opportunities = alloc::vec::Vec::with_capacity(pairs.len());
+    pub fn scan_opportunities(&mut self, pairs: &[TradingPair]) -> Result<Vec<Opportunity>> {
+        let mut opportunities = Vec::with_capacity(pairs.len());
         
         for pair in pairs {
             if let Some(opportunity) = self.detect_arbitrage(pair)? {
@@ -101,9 +107,9 @@ pub const fn initialize() -> Result<()> {
 ///
 /// Returns an error if market scanning fails
 #[inline]
-pub fn scan_all_markets() -> Result<alloc::vec::Vec<Opportunity>> {
+pub fn scan_all_markets() -> Result<Vec<Opportunity>> {
     // Stub implementation
-    Ok(alloc::vec::Vec::with_capacity(0))
+    Ok(Vec::with_capacity(0))
 }
 
 /// Get current market snapshot

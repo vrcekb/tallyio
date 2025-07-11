@@ -4,6 +4,11 @@
 //! nanosecond-level performance requirements.
 
 use crate::Result;
+
+#[cfg(feature = "std")]
+use std::borrow::ToOwned;
+
+#[cfg(not(feature = "std"))]
 use alloc::borrow::ToOwned;
 use core::sync::atomic::{AtomicUsize, Ordering};
 

@@ -136,11 +136,16 @@
 
 
 
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(not(feature = "std"))]
 extern crate alloc;
 
+#[cfg(not(feature = "std"))]
 use alloc::{borrow::ToOwned as _, string::String};
+
+#[cfg(feature = "std")]
+use std::{borrow::ToOwned as _, string::String};
 use core::{fmt::{Display, Formatter, Result as FmtResult}, result::Result as CoreResult};
 
 // Public modules

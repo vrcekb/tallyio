@@ -3,6 +3,11 @@
 //! This module provides vectorized operations for ultra-high performance computing.
 
 use crate::Result;
+
+#[cfg(feature = "std")]
+use std::borrow::ToOwned;
+
+#[cfg(not(feature = "std"))]
 use alloc::borrow::ToOwned;
 
 /// SIMD capabilities detection

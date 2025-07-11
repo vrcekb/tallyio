@@ -3,7 +3,12 @@
 //! This module provides ultra-fast transaction execution with minimal latency.
 
 use crate::{Result, types::{Opportunity, get_timestamp_ns, ExecutionParams}};
-use alloc::borrow::ToOwned;
+
+#[cfg(feature = "std")]
+use std::{borrow::ToOwned, vec::Vec};
+
+#[cfg(not(feature = "std"))]
+use alloc::{borrow::ToOwned, vec::Vec};
 
 /// Transaction execution engine
 #[repr(C, align(64))]
@@ -184,8 +189,8 @@ pub const fn initialize() -> Result<()> {
 ///
 /// Returns an error if batch execution fails
 #[inline]
-pub fn execute_batch(opportunities: &[Opportunity]) -> Result<alloc::vec::Vec<ExecutionResult>> {
-    let mut results = alloc::vec::Vec::with_capacity(opportunities.len());
+pub fn execute_batch(opportunities: &[Opportunity]) -> Result<Vec<ExecutionResult>> {
+    let mut results = Vec::with_capacity(opportunities.len());
     let mut engine = ExecutionEngine::default();
     
     for opportunity in opportunities {
