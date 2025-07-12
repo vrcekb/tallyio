@@ -46,8 +46,7 @@ chrono = { version = "0.4", features = ["serde"] }
 # Configuration
 config = "0.14"
 
-# Testing
-criterion = { version = "0.5", features = ["html_reports"] }
+# Testing and benchmarking dependencies are defined in individual crates
 
 # Workspace-wide optimization profile
 [profile.release]
@@ -142,3 +141,5 @@ module_name_repetitions = "allow"
 missing_trait_methods = "allow"
 wildcard_imports = "allow"
 redundant_pub_crate = "allow"
+
+# Benchmark configuration will be in individual crate Cargo.toml files

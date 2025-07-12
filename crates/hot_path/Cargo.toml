@@ -150,3 +150,13 @@ wildcard_imports = "allow"
 redundant_pub_crate = "allow"
 blanket_clippy_restriction_lints = "allow"
 separated_literal_suffix = "allow"
+
+# Development dependencies for testing and benchmarking
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+# Benchmark configuration
+[[bench]]
+name = "hot_path_benchmarks"
+harness = false
+path = "../../benches/hot_path_benchmarks.rs"
