@@ -1,6 +1,6 @@
-//! # TallyIO Hot Path Performance Benchmarks
+//! # `TallyIO` Hot Path Performance Benchmarks
 //!
-//! Ultra-precise benchmarks for the hot_path crate measuring nanosecond-level performance.
+//! Ultra-precise benchmarks for the `hot_path` crate measuring nanosecond-level performance.
 //! These benchmarks validate that the system meets the strict latency requirements
 //! for handling millions of dollars in daily trading volume.
 //!
@@ -11,7 +11,29 @@
 //! - Crypto Operations: <50μs processing
 //! - End-to-end Latency: <10ms total
 
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "Benchmark code doesn't require documentation")]
+#![allow(clippy::single_call_fn, reason = "Benchmark functions are called by criterion macros")]
+#![allow(clippy::min_ident_chars, reason = "Single-char identifiers are standard in benchmarks")]
+#![allow(clippy::implicit_return, reason = "Implicit returns are cleaner in closures")]
+#![allow(clippy::as_conversions, reason = "Controlled conversions in benchmark setup")]
+#![allow(clippy::cast_possible_truncation, reason = "Test data ranges are controlled")]
+#![allow(clippy::cast_sign_loss, reason = "Test data is always positive")]
+#![allow(clippy::arithmetic_side_effects, reason = "Test data arithmetic is controlled")]
+#![allow(clippy::unwrap_used, reason = "Benchmarks can panic on setup failure")]
+#![allow(clippy::std_instead_of_core, reason = "Benchmarks use std features")]
+#![allow(clippy::shadow_reuse, reason = "Iterator variables are commonly shadowed")]
+#![allow(clippy::default_numeric_fallback, reason = "Test ranges use default integers")]
+#![allow(clippy::let_underscore_must_use, reason = "Setup functions can be ignored")]
+#![allow(clippy::let_underscore_untyped, reason = "Setup return types are obvious")]
+#![allow(clippy::str_to_string, reason = "Test data creation uses to_string")]
+#![allow(clippy::used_underscore_binding, reason = "Benchmark data can be prefixed")]
+#![allow(clippy::unit_arg, reason = "black_box accepts unit values")]
+#![allow(clippy::semicolon_if_nothing_returned, reason = "Benchmark closures don't need semicolons")]
+#![allow(clippy::explicit_iter_loop, reason = "Array iteration is clear")]
+#![allow(clippy::uninlined_format_args, reason = "Format args are clear as-is")]
+#![allow(clippy::unseparated_literal_suffix, reason = "Benchmark literals are readable")]
+#![allow(clippy::doc_markdown, reason = "Already fixed in doc comments")]
+#![allow(clippy::restriction, reason = "Benchmarks have different requirements than production code")]
 
 use criterion::{
     criterion_group, criterion_main, Criterion, BenchmarkId, Throughput,

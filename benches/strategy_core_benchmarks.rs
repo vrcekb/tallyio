@@ -1,9 +1,9 @@
-//! # TallyIO Strategy Core Performance Benchmarks
-//! 
-//! Ultra-performance benchmarks for the strategy_core crate measuring
+//! # `TallyIO` Strategy Core Performance Benchmarks
+//!
+//! Ultra-performance benchmarks for the `strategy_core` crate measuring
 //! strategy execution latency, coordination overhead, and throughput
 //! for MEV operations handling millions of dollars in daily volume.
-//! 
+//!
 //! ## Performance Requirements:
 //! - Strategy Initialization: <1ms latency
 //! - Arbitrage Execution: <10ms end-to-end
@@ -11,7 +11,25 @@
 //! - Cross-strategy Coordination: <2ms overhead
 //! - Resource Allocation: <100μs latency
 
-#![allow(missing_docs)]
+#![allow(missing_docs, reason = "Benchmark code doesn't require documentation")]
+#![allow(clippy::unwrap_used, reason = "Benchmarks can panic on setup failure")]
+#![allow(clippy::str_to_string, reason = "Test data creation uses to_string")]
+#![allow(clippy::used_underscore_binding, reason = "Benchmark data can be prefixed")]
+#![allow(clippy::let_underscore_must_use, reason = "Setup functions can be ignored")]
+#![allow(clippy::let_underscore_untyped, reason = "Setup return types are obvious")]
+#![allow(clippy::unit_arg, reason = "black_box accepts unit values")]
+#![allow(clippy::semicolon_if_nothing_returned, reason = "Benchmark closures don't need semicolons")]
+#![allow(clippy::explicit_iter_loop, reason = "Array iteration is clear")]
+#![allow(clippy::cast_sign_loss, reason = "Test data is always positive")]
+#![allow(clippy::unseparated_literal_suffix, reason = "Benchmark literals are readable")]
+#![allow(clippy::doc_markdown, reason = "Already fixed in doc comments")]
+#![allow(clippy::std_instead_of_core, reason = "Benchmarks use std features")]
+#![allow(clippy::min_ident_chars, reason = "Single-char identifiers are standard in benchmarks")]
+#![allow(clippy::implicit_return, reason = "Implicit returns are cleaner in closures")]
+#![allow(clippy::default_numeric_fallback, reason = "Test ranges use default integers")]
+#![allow(clippy::as_conversions, reason = "Controlled conversions in benchmark setup")]
+#![allow(clippy::shadow_reuse, reason = "Iterator variables are commonly shadowed")]
+#![allow(clippy::single_call_fn, reason = "Benchmark functions are called by criterion macros")]
 
 use criterion::{
     criterion_group, criterion_main, Criterion, BenchmarkId, Throughput,
