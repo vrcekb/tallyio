@@ -165,3 +165,9 @@ overflow-checks = true
 [profile.bench]
 inherits = "release"
 debug = true
+
+# Benchmark configuration
+[[bench]]
+name = "strategy_core_benchmarks"
+harness = false
+path = "../../benches/strategy_core_benchmarks.rs"
