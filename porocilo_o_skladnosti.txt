@@ -1,44 +1,126 @@
 TallyIO Skladnostni Preizkus - Poročilo
 ='*'*50
-Najdenih 19 kršitev v 1 datotekah.
+Najdenih 47 kršitev v 14 datotekah.
 
---- Datoteka: crates\hot_path\build.rs ---
-  - Vrstica 103: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: println!("cargo:rustc-cfg=feature=\"{feature}\"");
-  - Vrstica 145: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("//! Generated CPU feature detection code\n\n");
-  - Vrstica 146: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("use core::sync::atomic::{AtomicBool, Ordering};\n\n");
-  - Vrstica 160: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("\n/// Initialize CPU feature detection\n");
-  - Vrstica 161: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("pub fn init_cpu_features() {\n");
-  - Vrstica 167: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: "    #[cfg(target_arch = \"x86_64\")]\n    {{\n        if is_x86_feature_detected!(\"{feature}\") {{\n            HAS_{}.store(true, Ordering::Relaxed);\n        }}\n    }}",
-  - Vrstica 175: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("}\n\n");
-  - Vrstica 181: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: "/// Check if {} is available\n#[inline(always)]\npub fn has_{feature}() -> bool {{\n    HAS_{}.load(Ordering::Relaxed)\n}}",
-  - Vrstica 195: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("/// Select optimal implementation based on CPU features\n");
-  - Vrstica 196: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("#[inline(always)]\n");
-  - Vrstica 197: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("pub fn select_optimal_impl() -> &'static str {\n");
-  - Vrstica 198: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("    if has_avx512f() && has_avx512vl() {\n");
-  - Vrstica 199: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("        \"avx512\"\n");
-  - Vrstica 200: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("    } else if has_avx2() {\n");
-  - Vrstica 201: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("        \"avx2\"\n");
-  - Vrstica 202: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("    } else {\n");
-  - Vrstica 203: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("        \"scalar\"\n");
-  - Vrstica 204: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("    }\n");
-  - Vrstica 205: Trdo kodirana pot. Uporabi 'std::path::PathBuf'.
-    | Koda: code.push_str("}\n");
+--- Datoteka: benches\hot_path_benchmarks.rs ---
+  - Vrstica 87: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(detect_opportunities(&snapshot).unwrap())
+  - Vrstica 110: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(execute_opportunity(&opportunity).unwrap())
+  - Vrstica 122: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(executor.execute(&opportunity).unwrap())
+  - Vrstica 229: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(update_price_feed(counter as u32, price).unwrap())
+  - Vrstica 264: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(optimizer.optimize(tx_data).unwrap())
+  - Vrstica 279: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(builder.finalize_bundle().unwrap())
+  - Vrstica 307: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(scanner.scan(&snapshot).unwrap())
+  - Vrstica 337: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: let opportunities = black_box(detect_opportunities(&snapshot).unwrap());
+  - Vrstica 339: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: let _result = black_box(execute_opportunity(opportunity).unwrap());
+
+--- Datoteka: benches\strategy_core_benchmarks.rs ---
+  - Vrstica 68: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(init_strategy_core(&config).unwrap())
+  - Vrstica 76: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(ArbitrageCoordinator::new(config).unwrap())
+  - Vrstica 84: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: black_box(LiquidationCoordinator::new(config).unwrap())
+  - Vrstica 100: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: let min_profit = Decimal::from_str_exact("0.01").unwrap();
+  - Vrstica 127: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: Decimal::from_str_exact("1000.0").unwrap(), // collateral
+  - Vrstica 128: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: Decimal::from_str_exact("50.0").unwrap(), // profit
+  - Vrstica 171: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: ArbitrageCoordinator::new(config).unwrap()
+  - Vrstica 174: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: coordinator.start().unwrap();
+  - Vrstica 175: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: coordinator.stop().unwrap();
+  - Vrstica 195: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: let min_profit = Decimal::from_str_exact("0.01").unwrap();
+  - Vrstica 210: Prepovedana uporaba '.unwrap()'. Uporabi '?' operator.
+    | Koda: let min_profit = Decimal::from_str_exact("0.01").unwrap();
+
+--- Datoteka: crates\chain_core\src\bsc\gas_oracle.rs ---
+  - Vrstica 274: Neoptimalno. Uporabi 'String::with_capacity(N)'.
+    | Koda: source: String::new(),
+
+--- Datoteka: crates\chain_core\src\bsc\mod.rs ---
+  - Vrstica 525: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Failed to create RPC coordinator: {e}"),
+  - Vrstica 530: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Failed to create BSC coordinator: {e}"),
+  - Vrstica 592: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: panic!("Expected at least one opportunity");
+
+--- Datoteka: crates\chain_core\src\bsc\venus_integration.rs ---
+  - Vrstica 718: Neoptimalno. Uporabi 'String::with_capacity(N)'.
+    | Koda: let mut best_market = String::new();
+
+--- Datoteka: crates\chain_core\src\ethereum\flashbots_integration.rs ---
+  - Vrstica 84: Neoptimalno. Uporabi 'String::with_capacity(N)'.
+    | Koda: searcher_private_key: String::new(), // Must be set in production
+
+--- Datoteka: crates\chain_core\src\ethereum\mev_boost_integration.rs ---
+  - Vrstica 287: Neoptimalno. Uporabi 'String::with_capacity(N)'.
+    | Koda: url: String::new(),
+  - Vrstica 288: Neoptimalno. Uporabi 'String::with_capacity(N)'.
+    | Koda: public_key: String::new(),
+  - Vrstica 691: Neoptimalno. Uporabi 'String::with_capacity(N)'.
+    | Koda: String::new()
+
+--- Datoteka: crates\chain_core\src\ethereum\mod.rs ---
+  - Vrstica 627: Neoptimalno. Uporabi 'Vec::with_capacity(N)'.
+    | Koda: let mut opportunities = Vec::new();
+  - Vrstica 785: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Failed to create RPC coordinator: {e}"),
+  - Vrstica 790: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Failed to create Ethereum coordinator: {e}"),
+  - Vrstica 821: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: panic!("Expected at least one opportunity");
+
+--- Datoteka: crates\chain_core\src\polygon\aave_integration.rs ---
+  - Vrstica 724: Neoptimalno. Uporabi 'String::with_capacity(N)'.
+    | Koda: let mut best_market = String::new();
+
+--- Datoteka: crates\chain_core\src\types.rs ---
+  - Vrstica 360: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Valid chain ID failed: {e}"),
+  - Vrstica 364: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Valid chain ID failed: {e}"),
+  - Vrstica 388: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Valid hex address failed: {e}"),
+
+--- Datoteka: crates\chain_core\src\utils.rs ---
+  - Vrstica 430: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Valid function signature failed: {e}"),
+  - Vrstica 438: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Valid encoded data failed: {e}"),
+  - Vrstica 446: Prepovedana uporaba 'panic!()'. Vrneš 'Err(anyhow!("..."))'.
+    | Koda: Err(e) => panic!("Valid encoded address failed: {e}"),
+
+--- Datoteka: tests\integration_hot_path.rs ---
+  - Vrstica 344: Neoptimalno. Uporabi 'String::with_capacity(N)'.
+    | Koda: let invalid_opportunity = Opportunity::new(0, String::new(), 0, 0);
+
+--- Datoteka: tests\integration_strategy_core.rs ---
+  - Vrstica 374: Neoptimalno. Uporabi 'Vec::with_capacity(N)'.
+    | Koda: let mut coordinators = Vec::new();
+  - Vrstica 702: Neoptimalno. Uporabi 'Vec::with_capacity(N)'.
+    | Koda: let mut coordinators = Vec::new();
+
+--- Datoteka: tests\stress_test_hot_path.rs ---
+  - Vrstica 124: Neoptimalno. Uporabi 'Vec::with_capacity(N)'.
+    | Koda: let mut allocators = Vec::new();
+  - Vrstica 125: Neoptimalno. Uporabi 'Vec::with_capacity(N)'.
+    | Koda: let mut pools = Vec::new();
+  - Vrstica 153: Neoptimalno. Uporabi 'Vec::with_capacity(N)'.
+    | Koda: let mut objects = Vec::new();
+  - Vrstica 404: Neoptimalno. Uporabi 'String::with_capacity(N)'.
+    | Koda: let invalid_opportunity = Opportunity::new(0, String::new(), 0, 0);
 

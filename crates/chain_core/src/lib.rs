@@ -394,28 +394,28 @@ impl ChainCore {
         #[cfg(feature = "arbitrum")]
         {
             self.arbitrum = Some(Arc::new(
-                arbitrum::ArbitrumCoordinator::new(Arc::<ChainCoreConfig>::clone(&self.config), Arc::<rpc::RpcCoordinator>::clone(&self.rpc)).await?
+                arbitrum::ArbitrumCoordinator::new(Arc::<ChainCoreConfig>::clone(&self.config)).await?
             ));
         }
         
         #[cfg(feature = "optimism")]
         {
             self.optimism = Some(Arc::new(
-                optimism::OptimismCoordinator::new(Arc::<ChainCoreConfig>::clone(&self.config), Arc::<rpc::RpcCoordinator>::clone(&self.rpc)).await?
+                optimism::OptimismCoordinator::new(Arc::<ChainCoreConfig>::clone(&self.config)).await?
             ));
         }
         
         #[cfg(feature = "base")]
         {
             self.base = Some(Arc::new(
-                base::BaseCoordinator::new(Arc::<ChainCoreConfig>::clone(&self.config), Arc::<rpc::RpcCoordinator>::clone(&self.rpc)).await?
+                base::BaseCoordinator::new(Arc::<ChainCoreConfig>::clone(&self.config)).await?
             ));
         }
         
         #[cfg(feature = "avalanche")]
         {
             self.avalanche = Some(Arc::new(
-                avalanche::AvalancheCoordinator::new(Arc::<ChainCoreConfig>::clone(&self.config), Arc::<rpc::RpcCoordinator>::clone(&self.rpc)).await?
+                avalanche::AvalancheCoordinator::new(Arc::<ChainCoreConfig>::clone(&self.config)).await?
             ));
         }
         

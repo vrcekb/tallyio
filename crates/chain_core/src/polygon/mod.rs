@@ -7,6 +7,12 @@
 //! - MEV detection with <500ns latency
 //! - Gas optimization for MATIC efficiency
 
+// Submodules
+pub mod quickswap_integration;
+pub mod aave_integration;
+pub mod curve_integration;
+pub mod gas_oracle;
+
 use crate::{
     ChainCoreConfig, Result,
     types::{ChainId, TokenAddress, TradingPair, OpportunityType},
@@ -512,6 +518,24 @@ impl PolygonCoordinator {
         });
     }
 }
+
+// Re-exports for public API
+pub use quickswap_integration::{
+    QuickSwapIntegration, QuickSwapConfig, QuickSwapStats,
+    QuickSwapPool, QuickSwapRoute, QuickSwapPosition
+};
+pub use aave_integration::{
+    AavePolygonIntegration, AavePolygonConfig, AavePolygonStats,
+    AavePolygonMarket, AavePolygonLiquidationOpportunity, AavePolygonPosition
+};
+pub use curve_integration::{
+    CurvePolygonIntegration, CurvePolygonConfig, CurvePolygonStats,
+    CurvePolygonPool, CurvePolygonRoute, CurvePolygonPosition, CurvePolygonArbitrageOpportunity
+};
+pub use gas_oracle::{
+    PolygonGasOracle, PolygonGasOracleConfig, PolygonGasOracleStats,
+    PolygonGasPriceInfo, PolygonGasPrediction, GasPriority
+};
 
 #[cfg(test)]
 mod tests {
