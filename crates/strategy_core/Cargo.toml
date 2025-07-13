@@ -142,29 +142,7 @@ mod_module_files = "allow"  # Enterprise architecture requires mod.rs files
 warnings = "deny"
 unsafe_code = "warn"  # Allow unsafe for performance-critical sections with documentation
 
-# Profile optimizations for AMD EPYC 9454P
-[profile.release]
-lto = "fat"
-codegen-units = 1
-panic = "abort"
-opt-level = 3
-debug = false
-strip = true
-overflow-checks = false
-
-[profile.release.package."*"]
-opt-level = 3
-
-# Development profile with some optimizations for faster testing
-[profile.dev]
-opt-level = 1
-debug = true
-overflow-checks = true
-
-# Benchmark profile
-[profile.bench]
-inherits = "release"
-debug = true
+# Profile optimizations moved to workspace root Cargo.toml
 
 # Benchmark configuration
 [[bench]]

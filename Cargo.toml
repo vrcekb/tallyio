@@ -6,6 +6,7 @@ resolver = "2"
 members = [
     "crates/strategy_core",
     "crates/hot_path",
+    "crates/chain_core",
 ]
 
 # Workspace-wide dependencies for consistency
@@ -20,44 +21,86 @@ thiserror = "1.0"
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+bincode = "1.3"
+postcard = "1.0"
 
 # Financial calculations (no floating point!)
 rust_decimal = { version = "1.33", features = ["serde-with-str", "maths"] }
+rust_decimal_macros = "1.33"
 
 # High-performance collections
 ahash = "0.8"
 dashmap = "5.5"
 crossbeam = "0.8"
+smallvec = "1.11"
+tinyvec = "1.6"
+rayon = "1.8"
+parking_lot = "0.12"
 
 # Cryptography
 sha3 = "0.10"
 secp256k1 = { version = "0.28", features = ["recovery", "global-context"] }
+k256 = { version = "0.13", features = ["ecdsa", "sha256"] }
+blake3 = "1.5"
+hex = "0.4"
 
 # Networking
 reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+tungstenite = "0.20"
+quinn = "0.10"
+hyper = { version = "0.14", features = ["full"] }
+hyper-tls = "0.5"
+tokio-tungstenite = { version = "0.20", features = ["native-tls"] }
+
+# JSON-RPC
+jsonrpsee = { version = "0.20", features = ["client", "server", "macros"] }
+
+# Ethereum specific
+ethers = { version = "2.0", features = ["ws", "rustls", "ipc"] }
+alloy-primitives = "0.4"
+alloy-rlp = "0.3"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "rust_decimal"] }
+redis = { version = "0.24", features = ["tokio-comp", "ahash"] }
 
 # Logging and tracing
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+metrics = "0.22"
+prometheus = "0.13"
 
 # Time handling
 chrono = { version = "0.4", features = ["serde"] }
+
+# Async utilities
+futures = "0.3"
+async-trait = "0.1"
+
+# URL parsing
+url = "2.4"
 
 # Configuration
 config = "0.14"
 
 # Testing and benchmarking dependencies are defined in individual crates
 
-# Workspace-wide optimization profile
+# Workspace-wide optimization profiles for AMD EPYC 9454P
 [profile.release]
 opt-level = 3
-lto = "fat"
-codegen-units = 1
-panic = "abort"
-strip = true
+lto = "fat"                    # Full link-time optimization
+codegen-units = 1              # Single codegen unit for maximum optimization
+panic = "abort"                # Abort on panic (no unwinding overhead)
+strip = true                   # Strip symbols for smaller binary
+overflow-checks = false        # Disable overflow checks for performance
+debug = false                  # No debug info in release
+
+# Optimize all dependencies aggressively
+[profile.release.package."*"]
+opt-level = 3
 overflow-checks = false
 
-# Ultra-aggressive optimization for production
+# Ultra-aggressive optimization for production deployment
 [profile.production]
 inherits = "release"
 opt-level = 3
@@ -68,23 +111,26 @@ strip = true
 overflow-checks = false
 debug = false
 
-# Development profile optimized for fast compilation
+# Development profile with some optimizations for faster testing
 [profile.dev]
-opt-level = 0
-debug = true
-overflow-checks = true
+opt-level = 1                  # Some optimization for dev builds
+debug = true                   # Keep debug info for development
+overflow-checks = true         # Keep overflow checks in dev
 
 # Test profile with optimizations for benchmarks
 [profile.test]
 opt-level = 2
 debug = true
+overflow-checks = true
 
 # Benchmark profile for maximum performance
 [profile.bench]
+inherits = "release"
 opt-level = 3
-lto = "thin"
+lto = "thin"                   # Thin LTO for faster compilation
 codegen-units = 1
-debug = false
+debug = true                   # Keep debug info for profiling
+overflow-checks = false
 
 # Workspace-wide features
 [workspace.metadata]

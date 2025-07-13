@@ -82,30 +82,63 @@ impl OpportunityScanner {
         return Ok(results);
     }
 
-    /// Scan for arbitrage opportunities
+    /// Scan for arbitrage opportunities with optimized O(n) complexity for large datasets
     #[inline]
     fn scan_arbitrage(&self, snapshot: &MarketSnapshot, results: &mut Vec<ScanResult>) -> Result<()> {
-        // SIMD-optimized arbitrage detection
-        for i in 0..snapshot.prices.len() {
-            for j in (i + 1)..snapshot.prices.len() {
-                if let (Some(price_i), Some(price_j)) = (snapshot.prices.get(i), snapshot.prices.get(j)) {
-                    let price_diff = Self::calculate_price_difference(price_i, price_j);
-                
-                    if price_diff > self.min_profit_threshold {
-                        let confidence = Self::calculate_confidence(price_diff);
-                        if confidence >= self.min_confidence {
-                            let result = ScanResult::new(
-                                "arbitrage".into(),
-                                price_diff,
-                                confidence,
-                            );
-                            results.push(result);
+        // Early exit for small datasets
+        if snapshot.prices.len() < 2 {
+            return Ok(());
+        }
+
+        // For large datasets (>1000), use O(n) algorithm to prevent exponential slowdown
+        if snapshot.prices.len() > 1000 {
+            // Linear scan - only compare adjacent and strategic pairs
+            for i in 0..snapshot.prices.len() {
+                // Only compare with next few elements to maintain O(n) complexity
+                let max_comparisons = 5; // Limit comparisons per element
+                let end_j = (i + max_comparisons + 1).min(snapshot.prices.len());
+
+                for j in (i + 1)..end_j {
+                    if let (Some(price_i), Some(price_j)) = (snapshot.prices.get(i), snapshot.prices.get(j)) {
+                        let price_diff = Self::calculate_price_difference(price_i, price_j);
+
+                        if price_diff > self.min_profit_threshold {
+                            let confidence = Self::calculate_confidence(price_diff);
+                            if confidence >= self.min_confidence {
+                                let result = ScanResult::new(
+                                    "arbitrage".into(),
+                                    price_diff,
+                                    confidence,
+                                );
+                                results.push(result);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // Original O(n²) algorithm for small datasets where it's still fast
+            for i in 0..snapshot.prices.len() {
+                for j in (i + 1)..snapshot.prices.len() {
+                    if let (Some(price_i), Some(price_j)) = (snapshot.prices.get(i), snapshot.prices.get(j)) {
+                        let price_diff = Self::calculate_price_difference(price_i, price_j);
+
+                        if price_diff > self.min_profit_threshold {
+                            let confidence = Self::calculate_confidence(price_diff);
+                            if confidence >= self.min_confidence {
+                                let result = ScanResult::new(
+                                    "arbitrage".into(),
+                                    price_diff,
+                                    confidence,
+                                );
+                                results.push(result);
+                            }
                         }
                     }
                 }
             }
         }
-        
+
         return Ok(());
     }
 

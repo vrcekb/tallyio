@@ -10,26 +10,7 @@ readme = "README.md"
 keywords = ["mev", "defi", "crypto", "performance", "simd"]
 categories = ["finance", "algorithms", "no-std"]
 
-# Aggressive optimization settings for production
-[profile.release]
-lto = "fat"                    # Full link-time optimization
-codegen-units = 1              # Single codegen unit for maximum optimization
-panic = "abort"                # Abort on panic (no unwinding overhead)
-opt-level = 3                  # Maximum optimization level
-debug = false                  # No debug info in release
-strip = true                   # Strip symbols for smaller binary
-overflow-checks = false        # Disable overflow checks for performance
-
-# Optimize all dependencies aggressively
-[profile.release.package."*"]
-opt-level = 3
-overflow-checks = false
-
-# Development profile with some optimizations for testing
-[profile.dev]
-opt-level = 1                  # Some optimization for dev builds
-debug = true                   # Keep debug info for development
-overflow-checks = true         # Keep overflow checks in dev
+# Profile optimizations moved to workspace root Cargo.toml
 
 # Performance-critical dependencies
 [dependencies]
