@@ -167,6 +167,9 @@ pub enum ChainCoreError {
     
     #[error("Configuration error: {0}")]
     Configuration(String),
+
+    #[error("Invalid input: {0}")]
+    InvalidInput(String),
     
     #[error("Internal error: {0}")]
     Internal(String),
@@ -270,6 +273,9 @@ pub struct ChainCoreConfig {
     
     /// NUMA node for thread pinning (0-based)
     pub numa_node: Option<u32>,
+
+    /// Local nodes configuration
+    pub local_nodes: rpc::local_nodes::LocalNodesConfig,
 }
 
 impl Default for ChainCoreConfig {
@@ -284,6 +290,7 @@ impl Default for ChainCoreConfig {
             default_deadline_seconds: 300, // 5 minutes
             enable_monitoring: true,
             numa_node: None,
+            local_nodes: rpc::local_nodes::LocalNodesConfig::default(),
         }
     }
 }

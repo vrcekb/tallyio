@@ -313,6 +313,7 @@ pub mod perf {
     use std::time::Instant;
     
     /// Simple performance timer
+    #[derive(Debug)]
     pub struct Timer {
         start: Instant,
         name: String,
